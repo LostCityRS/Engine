@@ -1,5 +1,5 @@
 use std::io::BufRead;
-use lostcity::script::script::{ScriptProvider, ScriptState};
+use lostcity::script::{ScriptProvider, ScriptState};
 
 fn main() {
     let provider = ScriptProvider::load("data/pack/server");

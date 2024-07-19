@@ -1,5 +1,5 @@
 use criterion::*;
-use lostcity::io::packet::Packet;
+use lostcity::io::Packet;
 
 fn worst_case(packet: &mut Packet) {
     for _ in 0..45714 {

@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use std::rc::Rc;
-use crate::io::packet::Packet;
+use crate::io::Packet;
 
 #[derive(Debug, Clone)]
 pub struct ScriptFile {
