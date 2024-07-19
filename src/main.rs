@@ -108,6 +108,7 @@ impl Packet {
     }
 }
 
+#[derive(Debug, Clone)]
 struct ScriptFile {
     id: i32,
     int_locals: u16,
@@ -214,8 +215,7 @@ impl ScriptFile {
 
 struct ScriptProvider {
     scripts: Vec<ScriptFile>,
-    scripts_by_name: HashMap<String, ScriptFile>,
-    scripts_by_key: HashMap<i32, ScriptFile>
+    scripts_by_name: HashMap<String, ScriptFile>
 }
 
 impl ScriptProvider {
@@ -233,8 +233,7 @@ impl ScriptProvider {
 
         let mut provider = ScriptProvider {
             scripts: Vec::new(),
-            scripts_by_name: HashMap::new(),
-            scripts_by_key: HashMap::new()
+            scripts_by_name: HashMap::new()
         };
 
         for id in 0..count {
@@ -246,7 +245,9 @@ impl ScriptProvider {
             let start = dat.pos;
             let end = start + length as usize;
 
-            ScriptFile::decode(&mut dat, length);
+            let script = ScriptFile::decode(&mut dat, length);
+            provider.scripts.push(script.clone());
+            provider.scripts_by_name.insert(script.name.clone(), script);
 
             if dat.pos > end {
                 panic!("Script {} has read past end", id);
@@ -261,6 +262,159 @@ impl ScriptProvider {
     }
 }
 
+struct GoSubFrame {
+    script: ScriptFile,
+    pc: i32,
+    int_locals: Vec<i32>,
+    string_locals: Vec<String>
+}
+
+struct ScriptState {
+    script: ScriptFile,
+    execution_state: i32,
+    pc: i32,
+    opcount: i32,
+    frames: Vec<GoSubFrame>,
+    fp: usize,
+    int_stack: Vec<i32>,
+    isp: usize,
+    string_stack: Vec<String>,
+    ssp: usize,
+    int_locals: Vec<i32>,
+    string_locals: Vec<String>
+}
+
+impl ScriptState {
+    fn new_with_args(script: ScriptFile, int_args: Vec<i32>, string_args: Vec<String>) -> ScriptState {
+        ScriptState {
+            script,
+            execution_state: 0,
+            pc: -1,
+            opcount: 0,
+            frames: Vec::new(), // capacity of 50
+            fp: 0,
+            int_stack: vec![0; 1000],
+            isp: 0,
+            string_stack: vec![String::new(); 1000],
+            ssp: 0,
+            int_locals: int_args,
+            string_locals: string_args
+        }
+    }
+
+    fn push_frame(&mut self, new_script: ScriptFile) {
+        let int_arg_count = new_script.int_args as usize;
+        let string_arg_count = new_script.string_args as usize;
+
+        let frame = GoSubFrame {
+            script: std::mem::replace(&mut self.script, new_script),
+            pc: self.pc,
+            int_locals: std::mem::replace(&mut self.int_locals, vec![0; int_arg_count]),
+            string_locals: std::mem::replace(&mut self.string_locals, vec![String::new(); string_arg_count]),
+        };
+
+        self.frames.push(frame);
+        self.fp += 1;
+        self.pc = -1;
+
+        for i in (0..int_arg_count).rev() {
+            let value = self.pop_int();
+            self.int_locals[i] = value;
+        }
+
+        // todo: pop strings
+    }
+
+    fn pop_frame(&mut self) {
+        let frame = self.frames.pop().unwrap();
+        self.fp -= 1;
+        self.script = frame.script;
+        self.pc = frame.pc;
+        self.int_locals = frame.int_locals;
+        self.string_locals = frame.string_locals;
+    }
+
+    fn push_int(&mut self, value: i32) {
+        self.int_stack[self.isp] = value;
+        self.isp += 1;
+    }
+
+    fn pop_int(&mut self) -> i32 {
+        self.isp -= 1;
+        self.int_stack[self.isp]
+    }
+
+    fn int_operand(&self) -> i32 {
+        self.script.int_operands[self.pc as usize]
+    }
+
+    fn execute(&mut self, provider: ScriptProvider) {
+        while self.execution_state == 0 {
+            self.pc += 1;
+            let opcode = self.script.opcodes[self.pc as usize];
+            // println!("fp {} op {} isp {} ssp {} pc {}", self.fp, opcode, self.isp, self.ssp, self.pc);
+
+            if opcode == 0 {
+                // PUSH_CONSTANT_INT
+                self.push_int(self.int_operand());
+            } else if opcode == 6 {
+                // BRANCH
+                self.pc += self.int_operand();
+            } else if opcode == 21 {
+                // RETURN
+                if self.fp == 0 {
+                    self.execution_state = 1;
+                    break;
+                }
+
+                self.pop_frame();
+            } else if opcode == 31 {
+                // BRANCH_LESS_THAN_OR_EQUALS
+                let b = self.pop_int();
+                let a = self.pop_int();
+                if a <= b {
+                    self.pc += self.int_operand();
+                }
+            } else if opcode == 33 {
+                // PUSH_INT_LOCAL
+                let operand = self.int_operand();
+                self.push_int(self.int_locals[operand as usize]);
+            } else if opcode == 34 {
+                // POP_INT_LOCAL
+                let operand = self.int_operand();
+                self.int_locals[operand as usize] = self.pop_int();
+            } else if opcode == 40 {
+                // GOSUB_WITH_PARAMS
+                let operand = self.int_operand();
+                self.push_frame(provider.scripts[operand as usize].clone());
+            } else if opcode == 4600 {
+                // ADD
+                let b = self.pop_int();
+                let a = self.pop_int();
+                self.push_int(a + b);
+            } else if opcode == 4601 {
+                // SUB
+                let b = self.pop_int();
+                let a = self.pop_int();
+                self.push_int(a - b);
+            } else {
+                panic!("Unhandled script opcode {}", opcode);
+            }
+
+            self.opcount += 1;
+        }
+    }
+}
+
 fn main() {
-    ScriptProvider::load("data/pack/server");
+    let provider = ScriptProvider::load("data/pack/server");
+
+    let fib = provider.scripts_by_name.get("[proc,fib]").unwrap();
+    let mut state = ScriptState::new_with_args(fib.clone(), vec![40], Vec::new());
+
+    println!("Executing [proc,fib]");
+    let start = std::time::Instant::now();
+    state.execute(provider);
+    println!("[proc,fib] completed in {:?}", start.elapsed());
+    println!("fib: {}", state.pop_int());
 }
