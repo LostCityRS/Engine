@@ -215,7 +215,8 @@ impl ScriptFile {
 
 struct ScriptProvider {
     scripts: Vec<ScriptFile>,
-    scripts_by_name: HashMap<String, ScriptFile>
+    // map of name to index
+    scripts_by_name: HashMap<String, usize>
 }
 
 impl ScriptProvider {
@@ -232,11 +233,11 @@ impl ScriptProvider {
         // println!("Loading {} scripts, compiled with compiler build {}", count, build);
 
         let mut provider = ScriptProvider {
-            scripts: Vec::new(),
+            scripts: Vec::with_capacity(count as usize),
             scripts_by_name: HashMap::new()
         };
 
-        for id in 0..count {
+        for id in 0..count as usize {
             let length = idx.g2();
             if length == 0 {
                 continue;
@@ -246,8 +247,8 @@ impl ScriptProvider {
             let end = start + length as usize;
 
             let script = ScriptFile::decode(&mut dat, length);
-            provider.scripts.push(script.clone());
-            provider.scripts_by_name.insert(script.name.clone(), script);
+            provider.scripts_by_name.insert(script.name.clone(), id);
+            provider.scripts.push(script);
 
             if dat.pos > end {
                 panic!("Script {} has read past end", id);
@@ -259,6 +260,10 @@ impl ScriptProvider {
         println!("Loaded {} scripts in {:?}", count, start.elapsed());
 
         provider
+    }
+
+    fn get_by_name(&self, name: &str) -> Option<&ScriptFile> {
+        self.scripts_by_name.get(name).map(|&index| &self.scripts[index])
     }
 }
 
@@ -273,7 +278,7 @@ struct ScriptState {
     script: ScriptFile,
     execution_state: i32,
     pc: i32,
-    opcount: i32,
+    opcount: i64,
     frames: Vec<GoSubFrame>,
     fp: usize,
     int_stack: Vec<i32>,
@@ -348,11 +353,11 @@ impl ScriptState {
         self.script.int_operands[self.pc as usize]
     }
 
-    fn execute(&mut self, provider: ScriptProvider) {
+    fn execute(&mut self, provider: &ScriptProvider) {
+        let start = std::time::Instant::now();
         while self.execution_state == 0 {
             self.pc += 1;
             let opcode = self.script.opcodes[self.pc as usize];
-            // println!("fp {} op {} isp {} ssp {} pc {}", self.fp, opcode, self.isp, self.ssp, self.pc);
 
             if opcode == 0 {
                 // PUSH_CONSTANT_INT
@@ -403,18 +408,21 @@ impl ScriptState {
 
             self.opcount += 1;
         }
+
+        let end = start.elapsed();
+        println!("{:?}", end);
     }
 }
 
 fn main() {
     let provider = ScriptProvider::load("data/pack/server");
 
-    let fib = provider.scripts_by_name.get("[proc,fib]").unwrap();
-    let mut state = ScriptState::new_with_args(fib.clone(), vec![40], Vec::new());
+    let fib = provider.get_by_name("[proc,fib]");
+    if fib.is_none() {
+        panic!("Could not find fib");
+    }
+    let mut state = ScriptState::new_with_args(fib.unwrap().clone(), vec![40], Vec::new());
 
-    println!("Executing [proc,fib]");
-    let start = std::time::Instant::now();
-    state.execute(provider);
-    println!("[proc,fib] completed in {:?}", start.elapsed());
-    println!("fib: {}", state.pop_int());
+    state.execute(&provider);
+    println!("fib: result={} after {} instructions", state.pop_int(), state.opcount);
 }
