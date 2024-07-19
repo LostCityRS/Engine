@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use std::rc::Rc;
+use std::io::{self, BufRead};
 
 struct Packet {
     data: Vec<u8>,
@@ -434,4 +435,9 @@ fn main() {
 
     state.execute(&provider);
     println!("fib: result={} after {} instructions", state.pop_int(), state.opcount);
+
+    println!("Press enter to exit");
+    let stdin = io::stdin();
+    let mut iterator = stdin.lock().lines();
+    let line1 = iterator.next().unwrap().unwrap();
 }
