@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::rc::Rc;
 
 struct Packet {
     data: Vec<u8>,
@@ -214,7 +215,7 @@ impl ScriptFile {
 }
 
 struct ScriptProvider {
-    scripts: Vec<ScriptFile>,
+    scripts: Vec<Rc<ScriptFile>>,
     // map of name to index
     scripts_by_name: HashMap<String, usize>
 }
@@ -248,7 +249,7 @@ impl ScriptProvider {
 
             let script = ScriptFile::decode(&mut dat, length);
             provider.scripts_by_name.insert(script.name.clone(), id);
-            provider.scripts.push(script);
+            provider.scripts.push(Rc::new(script));
 
             if dat.pos > end {
                 panic!("Script {} has read past end", id);
@@ -262,20 +263,28 @@ impl ScriptProvider {
         provider
     }
 
-    fn get_by_name(&self, name: &str) -> Option<&ScriptFile> {
-        self.scripts_by_name.get(name).map(|&index| &self.scripts[index])
+    fn get(&self, id: usize) -> Rc<ScriptFile> {
+        Rc::clone(&self.scripts[id])
+    }
+
+    fn get_by_name(&self, name: &str) -> Option<Rc<ScriptFile>> {
+        if let Some(id) = self.scripts_by_name.get(name) {
+            Some(self.get(*id))
+        } else {
+            None
+        }
     }
 }
 
 struct GoSubFrame {
-    script: ScriptFile,
+    script: Rc<ScriptFile>,
     pc: i32,
     int_locals: Vec<i32>,
-    string_locals: Vec<String>
+    string_locals: Vec<String>,
 }
 
 struct ScriptState {
-    script: ScriptFile,
+    script: Rc<ScriptFile>,
     execution_state: i32,
     pc: i32,
     opcount: i64,
@@ -286,11 +295,11 @@ struct ScriptState {
     string_stack: Vec<String>,
     ssp: usize,
     int_locals: Vec<i32>,
-    string_locals: Vec<String>
+    string_locals: Vec<String>,
 }
 
 impl ScriptState {
-    fn new_with_args(script: ScriptFile, int_args: Vec<i32>, string_args: Vec<String>) -> ScriptState {
+    fn new_with_args(script: Rc<ScriptFile>, int_args: Vec<i32>, string_args: Vec<String>) -> ScriptState {
         ScriptState {
             script,
             execution_state: 0,
@@ -307,12 +316,12 @@ impl ScriptState {
         }
     }
 
-    fn push_frame(&mut self, new_script: ScriptFile) {
+    fn push_frame(&mut self, new_script: Rc<ScriptFile>) {
         let int_arg_count = new_script.int_args as usize;
         let string_arg_count = new_script.string_args as usize;
 
         let frame = GoSubFrame {
-            script: std::mem::replace(&mut self.script, new_script),
+            script: Rc::clone(&new_script),
             pc: self.pc,
             int_locals: std::mem::replace(&mut self.int_locals, vec![0; int_arg_count]),
             string_locals: std::mem::replace(&mut self.string_locals, vec![String::new(); string_arg_count]),
@@ -391,7 +400,7 @@ impl ScriptState {
             } else if opcode == 40 {
                 // GOSUB_WITH_PARAMS
                 let operand = self.int_operand();
-                self.push_frame(provider.scripts[operand as usize].clone());
+                self.push_frame(provider.get(operand as usize));
             } else if opcode == 4600 {
                 // ADD
                 let b = self.pop_int();
@@ -421,7 +430,7 @@ fn main() {
     if fib.is_none() {
         panic!("Could not find fib");
     }
-    let mut state = ScriptState::new_with_args(fib.unwrap().clone(), vec![40], Vec::new());
+    let mut state = ScriptState::new_with_args(fib.unwrap(), vec![40], Vec::new());
 
     state.execute(&provider);
     println!("fib: result={} after {} instructions", state.pop_int(), state.opcount);
