@@ -27,32 +27,38 @@ impl Packet {
         Packet::from(data)
     }
 
+    #[inline(always)]
     pub fn len(&self) -> usize {
         self.data.len()
     }
 
+    #[inline(always)]
     pub fn g1(&mut self) -> u8 {
         self.pos += 1;
         self.data[self.pos - 1]
     }
 
+    #[inline(always)]
     pub fn g1s(&mut self) -> i8 {
         self.pos += 1;
         self.data[self.pos - 1] as i8
     }
 
+    #[inline(always)]
     pub fn g2(&mut self) -> u16 {
         self.pos += 2;
         (self.data[self.pos - 2] as u16) << 8
             | (self.data[self.pos - 1] as u16)
     }
 
+    #[inline(always)]
     pub fn g2s(&mut self) -> i16 {
         self.pos += 2;
         (self.data[self.pos - 2] as i16) << 8
             | (self.data[self.pos - 1] as i16)
     }
 
+    #[inline(always)]
     pub fn g3(&mut self) -> u32 {
         self.pos += 3;
         (self.data[self.pos - 3] as u32) << 16
@@ -61,6 +67,7 @@ impl Packet {
     }
 
     // java ints are always signed (java 8 added unsigned)
+    #[inline(always)]
     pub fn g4s(&mut self) -> i32 {
         self.pos += 4;
         (self.data[self.pos - 4] as i32) << 24
@@ -70,6 +77,7 @@ impl Packet {
     }
 
     // java longs are always signed (java 8 added unsigned)
+    #[inline(always)]
     pub fn g8s(&mut self) -> i64 {
         self.pos += 8;
         (self.data[self.pos - 8] as i64) << 56
@@ -82,6 +90,7 @@ impl Packet {
             | (self.data[self.pos - 1] as i64)
     }
 
+    #[inline(always)]
     pub fn gjstr(&mut self) -> String {
         // read ASCII until \0
         let mut length = self.pos;
@@ -94,6 +103,7 @@ impl Packet {
         str.to_string()
     }
 
+    #[inline(always)]
     pub fn gjstr_old(&mut self) -> String {
         // read ASCII until \n
         let mut length = self.pos;
@@ -106,14 +116,17 @@ impl Packet {
         str.to_string()
     }
 
+    #[inline(always)]
     pub fn bits(&mut self) {
         self.bit_pos = self.pos * 8;
     }
 
+    #[inline(always)]
     pub fn bytes(&mut self) {
         self.pos = (self.bit_pos + 7) / 8;
     }
 
+    #[inline(always)]
     pub fn pbit(&mut self, mut n: usize, val: u64) {
         let pos = self.bit_pos;
         self.bit_pos += n;

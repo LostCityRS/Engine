@@ -193,6 +193,17 @@ pub struct ScriptState {
 
 impl ScriptState {
     pub fn new_with_args(script: Rc<ScriptFile>, int_args: Vec<i32>, string_args: Vec<String>) -> ScriptState {
+        let mut int_locals = vec![0; script.int_locals as usize];
+        let mut string_locals = vec![String::new(); script.string_locals as usize];
+
+        for i in 0..int_args.len() {
+            int_locals[i] = int_args[i];
+        }
+
+        for i in 0..string_args.len() {
+            string_locals[i] = string_args[i].clone();
+        }
+
         ScriptState {
             script,
             execution_state: 0,
@@ -204,20 +215,23 @@ impl ScriptState {
             isp: 0,
             string_stack: vec![String::new(); 1000],
             ssp: 0,
-            int_locals: int_args,
-            string_locals: string_args
+            int_locals,
+            string_locals
         }
     }
 
+    #[inline(always)]
     fn push_frame(&mut self, new_script: Rc<ScriptFile>) {
         let int_arg_count = new_script.int_args as usize;
         let string_arg_count = new_script.string_args as usize;
+        let int_local_count = new_script.int_locals as usize;
+        let string_local_count = new_script.string_locals as usize;
 
         let frame = GoSubFrame {
             script: Rc::clone(&new_script),
             pc: self.pc,
-            int_locals: std::mem::replace(&mut self.int_locals, vec![0; int_arg_count]),
-            string_locals: std::mem::replace(&mut self.string_locals, vec![String::new(); string_arg_count]),
+            int_locals: std::mem::replace(&mut self.int_locals, vec![0; int_local_count]),
+            string_locals: std::mem::replace(&mut self.string_locals, vec![String::new(); string_local_count]),
         };
 
         self.frames.push(frame);
@@ -235,6 +249,7 @@ impl ScriptState {
         }
     }
 
+    #[inline(always)]
     fn pop_frame(&mut self) {
         let frame = self.frames.pop().unwrap();
         self.fp -= 1;
@@ -244,30 +259,36 @@ impl ScriptState {
         self.string_locals = frame.string_locals;
     }
 
+    #[inline(always)]
     fn push_int(&mut self, value: i32) {
         self.int_stack[self.isp] = value;
         self.isp += 1;
     }
 
+    #[inline(always)]
     pub fn pop_int(&mut self) -> i32 {
         self.isp -= 1;
         self.int_stack[self.isp]
     }
 
+    #[inline(always)]
     fn int_operand(&self) -> i32 {
         self.script.int_operands[self.pc as usize]
     }
 
+    #[inline(always)]
     fn push_string(&mut self, value: String) {
         self.string_stack[self.ssp] = value;
         self.ssp += 1;
     }
 
+    #[inline(always)]
     fn pop_string(&mut self) -> String {
         self.ssp -= 1;
         self.string_stack[self.ssp].clone()
     }
 
+    #[inline(always)]
     fn string_operand(&self) -> String {
         self.script.string_operands[self.pc as usize].clone()
     }
@@ -288,6 +309,14 @@ impl ScriptState {
                     // BRANCH
                     self.pc += self.int_operand();
                 },
+                9 => {
+                    // BRANCH_LESS_THAN
+                    let b = self.pop_int();
+                    let a = self.pop_int();
+                    if a < b {
+                        self.pc += self.int_operand();
+                    }
+                }
                 21 => {
                     // RETURN
                     if self.fp == 0 {
