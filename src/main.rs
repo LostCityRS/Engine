@@ -259,7 +259,7 @@ impl ScriptProvider {
             dat.pos = end;
         }
 
-        println!("Loaded {} scripts in {:?}", count, start.elapsed());
+        // println!("Loaded {} scripts in {:?}", count, start.elapsed());
 
         provider
     }
@@ -306,7 +306,7 @@ impl ScriptState {
             execution_state: 0,
             pc: -1,
             opcount: 0,
-            frames: Vec::new(), // capacity of 50
+            frames: Vec::with_capacity(50),
             fp: 0,
             int_stack: vec![0; 1000],
             isp: 0,
@@ -337,7 +337,10 @@ impl ScriptState {
             self.int_locals[i] = value;
         }
 
-        // todo: pop strings
+        for i in (0..string_arg_count).rev() {
+            let value = self.pop_string();
+            self.string_locals[i] = value;
+        }
     }
 
     fn pop_frame(&mut self) {
@@ -363,64 +366,89 @@ impl ScriptState {
         self.script.int_operands[self.pc as usize]
     }
 
+    fn push_string(&mut self, value: String) {
+        self.string_stack[self.ssp] = value;
+        self.ssp += 1;
+    }
+
+    fn pop_string(&mut self) -> String {
+        self.ssp -= 1;
+        self.string_stack[self.ssp].clone()
+    }
+
+    fn string_operand(&self) -> String {
+        self.script.string_operands[self.pc as usize].clone()
+    }
+
     fn execute(&mut self, provider: &ScriptProvider) {
         let start = std::time::Instant::now();
         while self.execution_state == 0 {
             self.pc += 1;
             let opcode = self.script.opcodes[self.pc as usize];
 
-            if opcode == 0 {
-                // PUSH_CONSTANT_INT
-                self.push_int(self.int_operand());
-            } else if opcode == 6 {
-                // BRANCH
-                self.pc += self.int_operand();
-            } else if opcode == 21 {
-                // RETURN
-                if self.fp == 0 {
-                    self.execution_state = 1;
-                    break;
-                }
-
-                self.pop_frame();
-            } else if opcode == 31 {
-                // BRANCH_LESS_THAN_OR_EQUALS
-                let b = self.pop_int();
-                let a = self.pop_int();
-                if a <= b {
+            let start = std::time::Instant::now();
+            match opcode {
+                0 => {
+                    // PUSH_CONSTANT_INT
+                    self.push_int(self.int_operand());
+                },
+                6 => {
+                    // BRANCH
                     self.pc += self.int_operand();
-                }
-            } else if opcode == 33 {
-                // PUSH_INT_LOCAL
-                let operand = self.int_operand();
-                self.push_int(self.int_locals[operand as usize]);
-            } else if opcode == 34 {
-                // POP_INT_LOCAL
-                let operand = self.int_operand();
-                self.int_locals[operand as usize] = self.pop_int();
-            } else if opcode == 40 {
-                // GOSUB_WITH_PARAMS
-                let operand = self.int_operand();
-                self.push_frame(provider.get(operand as usize));
-            } else if opcode == 4600 {
-                // ADD
-                let b = self.pop_int();
-                let a = self.pop_int();
-                self.push_int(a + b);
-            } else if opcode == 4601 {
-                // SUB
-                let b = self.pop_int();
-                let a = self.pop_int();
-                self.push_int(a - b);
-            } else {
-                panic!("Unhandled script opcode {}", opcode);
+                },
+                21 => {
+                    // RETURN
+                    if self.fp == 0 {
+                        self.execution_state = 1;
+                        break;
+                    }
+
+                    self.pop_frame();
+                },
+                31 => {
+                    // BRANCH_LESS_THAN_OR_EQUALS
+                    let b = self.pop_int();
+                    let a = self.pop_int();
+                    if a <= b {
+                        self.pc += self.int_operand();
+                    }
+                },
+                33 => {
+                    // PUSH_INT_LOCAL
+                    let operand = self.int_operand();
+                    self.push_int(self.int_locals[operand as usize]);
+                },
+                34 => {
+                    // POP_INT_LOCAL
+                    let operand = self.int_operand();
+                    self.int_locals[operand as usize] = self.pop_int();
+                },
+                40 => {
+                    // GOSUB_WITH_PARAMS
+                    let operand = self.int_operand();
+                    self.push_frame(provider.get(operand as usize));
+                },
+                4600 => {
+                    // ADD
+                    let b = self.pop_int();
+                    let a = self.pop_int();
+                    self.push_int(a + b);
+                },
+                4601 => {
+                    // SUB
+                    let b = self.pop_int();
+                    let a = self.pop_int();
+                    self.push_int(a - b);
+                },
+                _ => panic!("Unknown opcode: {}", opcode),
             }
+            // println!("op: {} took {:?}", opcode, start.elapsed());
 
             self.opcount += 1;
         }
 
         let end = start.elapsed();
-        println!("{:?}", end);
+        println!("script: {:?}", end);
     }
 }
 
@@ -428,16 +456,12 @@ fn main() {
     let provider = ScriptProvider::load("data/pack/server");
 
     let fib = provider.get_by_name("[proc,fib]");
-    if fib.is_none() {
-        panic!("Could not find fib");
-    }
-    let mut state = ScriptState::new_with_args(fib.unwrap(), vec![40], Vec::new());
-
+    let mut state = ScriptState::new_with_args(fib.unwrap(), vec![10], Vec::new());
     state.execute(&provider);
-    println!("fib: result={} after {} instructions", state.pop_int(), state.opcount);
+    println!("fib: result={} opcount={}", state.pop_int(), state.opcount);
 
-    println!("Press enter to exit");
-    let stdin = io::stdin();
-    let mut iterator = stdin.lock().lines();
-    let line1 = iterator.next().unwrap().unwrap();
+    // println!("Press enter to exit");
+    // let stdin = io::stdin();
+    // let mut iterator = stdin.lock().lines();
+    // let line1 = iterator.next().unwrap().unwrap();
 }
