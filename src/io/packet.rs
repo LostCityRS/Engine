@@ -27,6 +27,10 @@ impl Packet {
         Packet::from(data)
     }
 
+    pub fn avail(&self) -> i32 {
+        return (self.len() - self.pos) as i32;
+    }
+
     #[inline(always)]
     pub fn len(&self) -> usize {
         self.data.len()
@@ -114,6 +118,10 @@ impl Packet {
         let str = std::str::from_utf8(&self.data[self.pos..length]).unwrap();
         self.pos = length + 1;
         str.to_string()
+    }
+
+    pub fn gsmart(&mut self) -> i32 {
+        return if self.data[self.pos] < 0x80 { self.g1() as i32 } else { (self.g2() - 0x8000) as i32 };
     }
 
     #[inline(always)]
