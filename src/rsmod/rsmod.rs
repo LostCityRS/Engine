@@ -1,21 +1,21 @@
 use crate::rsmod::{CollisionFlag, CollisionFlagMap, LocAngle, LocLayer, LocShape};
 
 pub struct RSMod {
-    pub collision_flag_map: CollisionFlagMap
+    flags: CollisionFlagMap
 }
 
 impl RSMod {
     pub fn new() -> RSMod {
         return RSMod {
-            collision_flag_map: CollisionFlagMap::new()
+            flags: CollisionFlagMap::new()
         }
     }
 
     pub fn change_floor(&mut self, x: i32, z: i32, y: u8, add: bool) {
         if add {
-            self.collision_flag_map.add(x, z, y, CollisionFlag::Floor as u32);
+            self.flags.add(x, z, y, CollisionFlag::Floor as u32);
         } else {
-            self.collision_flag_map.remove(x, z, y, CollisionFlag::Floor as u32);
+            self.flags.remove(x, z, y, CollisionFlag::Floor as u32);
         }
     }
 
@@ -31,9 +31,9 @@ impl RSMod {
             let dx = x + (index % width) as i32;
             let dz = z + (index / width) as i32;
             if add {
-                self.collision_flag_map.add(dx, dz, y, mask);
+                self.flags.add(dx, dz, y, mask);
             } else {
-                self.collision_flag_map.remove(dx, dz, y, mask);
+                self.flags.remove(dx, dz, y, mask);
             }
         }
     }
@@ -44,9 +44,9 @@ impl RSMod {
             let dx = x + (index % size) as i32;
             let dz = z + (index / size) as i32;
             if add {
-                self.collision_flag_map.add(dx, dz, y, mask);
+                self.flags.add(dx, dz, y, mask);
             } else {
-                self.collision_flag_map.remove(dx, dz, y, mask);
+                self.flags.remove(dx, dz, y, mask);
             }
         }
     }
@@ -57,9 +57,9 @@ impl RSMod {
             let dx = x + (index % size) as i32;
             let dz = z + (index / size) as i32;
             if add {
-                self.collision_flag_map.add(dx, dz, y, mask);
+                self.flags.add(dx, dz, y, mask);
             } else {
-                self.collision_flag_map.remove(dx, dz, y, mask);
+                self.flags.remove(dx, dz, y, mask);
             }
         }
     }
@@ -67,9 +67,9 @@ impl RSMod {
     pub fn change_roof(&mut self, x: i32, z: i32, y: u8, add: bool) {
         let mask: u32 = CollisionFlag::Roof as u32;
         if add {
-            self.collision_flag_map.add(x, z, y, mask);
+            self.flags.add(x, z, y, mask);
         } else {
-            self.collision_flag_map.remove(x, z, y, mask);
+            self.flags.remove(x, z, y, mask);
         }
     }
 
@@ -129,38 +129,38 @@ impl RSMod {
                 match angle {
                     LocAngle::West => {
                         if add {
-                            self.collision_flag_map.add(x, z, y, west);
-                            self.collision_flag_map.add(x - 1, z, y, east);
+                            self.flags.add(x, z, y, west);
+                            self.flags.add(x - 1, z, y, east);
                         } else {
-                            self.collision_flag_map.remove(x, z, y, west);
-                            self.collision_flag_map.remove(x - 1, z, y, east);
+                            self.flags.remove(x, z, y, west);
+                            self.flags.remove(x - 1, z, y, east);
                         }
                     }
                     LocAngle::North => {
                         if add {
-                            self.collision_flag_map.add(x, z, y, north);
-                            self.collision_flag_map.add(x, z + 1, y, south);
+                            self.flags.add(x, z, y, north);
+                            self.flags.add(x, z + 1, y, south);
                         } else {
-                            self.collision_flag_map.remove(x, z, y, north);
-                            self.collision_flag_map.remove(x, z + 1, y, south);
+                            self.flags.remove(x, z, y, north);
+                            self.flags.remove(x, z + 1, y, south);
                         }
                     }
                     LocAngle::East => {
                         if add {
-                            self.collision_flag_map.add(x, z, y, east);
-                            self.collision_flag_map.add(x + 1, z, y, west);
+                            self.flags.add(x, z, y, east);
+                            self.flags.add(x + 1, z, y, west);
                         } else {
-                            self.collision_flag_map.remove(x, z, y, east);
-                            self.collision_flag_map.remove(x + 1, z, y, west);
+                            self.flags.remove(x, z, y, east);
+                            self.flags.remove(x + 1, z, y, west);
                         }
                     }
                     LocAngle::South => {
                         if add {
-                            self.collision_flag_map.add(x, z, y, south);
-                            self.collision_flag_map.add(x, z - 1, y, north);
+                            self.flags.add(x, z, y, south);
+                            self.flags.add(x, z - 1, y, north);
                         } else {
-                            self.collision_flag_map.remove(x, z, y, south);
-                            self.collision_flag_map.remove(x, z - 1, y, north);
+                            self.flags.remove(x, z, y, south);
+                            self.flags.remove(x, z - 1, y, north);
                         }
                     }
                 }
@@ -186,38 +186,38 @@ impl RSMod {
                 match angle {
                     LocAngle::West => {
                         if add {
-                            self.collision_flag_map.add(x, z, y, north_west);
-                            self.collision_flag_map.add(x - 1, z + 1, y, south_east);
+                            self.flags.add(x, z, y, north_west);
+                            self.flags.add(x - 1, z + 1, y, south_east);
                         } else {
-                            self.collision_flag_map.remove(x, z, y, north_west);
-                            self.collision_flag_map.remove(x - 1, z + 1, y, south_east);
+                            self.flags.remove(x, z, y, north_west);
+                            self.flags.remove(x - 1, z + 1, y, south_east);
                         }
                     }
                     LocAngle::North => {
                         if add {
-                            self.collision_flag_map.add(x, z, y, north_east);
-                            self.collision_flag_map.add(x + 1, z + 1, y, south_west);
+                            self.flags.add(x, z, y, north_east);
+                            self.flags.add(x + 1, z + 1, y, south_west);
                         } else {
-                            self.collision_flag_map.remove(x, z, y, north_east);
-                            self.collision_flag_map.remove(x + 1, z + 1, y, south_west);
+                            self.flags.remove(x, z, y, north_east);
+                            self.flags.remove(x + 1, z + 1, y, south_west);
                         }
                     }
                     LocAngle::East => {
                         if add {
-                            self.collision_flag_map.add(x, z, y, south_east);
-                            self.collision_flag_map.add(x + 1, z - 1, y, north_west);
+                            self.flags.add(x, z, y, south_east);
+                            self.flags.add(x + 1, z - 1, y, north_west);
                         } else {
-                            self.collision_flag_map.remove(x, z, y, south_east);
-                            self.collision_flag_map.remove(x + 1, z - 1, y, north_west);
+                            self.flags.remove(x, z, y, south_east);
+                            self.flags.remove(x + 1, z - 1, y, north_west);
                         }
                     }
                     LocAngle::South => {
                         if add {
-                            self.collision_flag_map.add(x, z, y, south_west);
-                            self.collision_flag_map.add(x - 1, z - 1, y, north_east);
+                            self.flags.add(x, z, y, south_west);
+                            self.flags.add(x - 1, z - 1, y, north_east);
                         } else {
-                            self.collision_flag_map.remove(x, z, y, south_west);
-                            self.collision_flag_map.remove(x - 1, z - 1, y, north_east);
+                            self.flags.remove(x, z, y, south_west);
+                            self.flags.remove(x - 1, z - 1, y, north_east);
                         }
                     }
                 }
@@ -243,46 +243,46 @@ impl RSMod {
                 match angle {
                     LocAngle::West => {
                         if add {
-                            self.collision_flag_map.add(x, z, y, north | west);
-                            self.collision_flag_map.add(x - 1, z, y, east);
-                            self.collision_flag_map.add(x, z + 1, y, south);
+                            self.flags.add(x, z, y, north | west);
+                            self.flags.add(x - 1, z, y, east);
+                            self.flags.add(x, z + 1, y, south);
                         } else {
-                            self.collision_flag_map.remove(x, z, y, north | west);
-                            self.collision_flag_map.remove(x - 1, z, y, east);
-                            self.collision_flag_map.remove(x, z + 1, y, south);
+                            self.flags.remove(x, z, y, north | west);
+                            self.flags.remove(x - 1, z, y, east);
+                            self.flags.remove(x, z + 1, y, south);
                         }
                     }
                     LocAngle::North => {
                         if add {
-                            self.collision_flag_map.add(x, z, y, north | east);
-                            self.collision_flag_map.add(x, z + 1, y, south);
-                            self.collision_flag_map.add(x + 1, z, y, west);
+                            self.flags.add(x, z, y, north | east);
+                            self.flags.add(x, z + 1, y, south);
+                            self.flags.add(x + 1, z, y, west);
                         } else {
-                            self.collision_flag_map.remove(x, z, y, north | east);
-                            self.collision_flag_map.remove(x, z + 1, y, south);
-                            self.collision_flag_map.remove(x + 1, z, y, west);
+                            self.flags.remove(x, z, y, north | east);
+                            self.flags.remove(x, z + 1, y, south);
+                            self.flags.remove(x + 1, z, y, west);
                         }
                     }
                     LocAngle::East => {
                         if add {
-                            self.collision_flag_map.add(x, z, y, south | east);
-                            self.collision_flag_map.add(x + 1, z, y, west);
-                            self.collision_flag_map.add(x, z - 1, y, north);
+                            self.flags.add(x, z, y, south | east);
+                            self.flags.add(x + 1, z, y, west);
+                            self.flags.add(x, z - 1, y, north);
                         } else {
-                            self.collision_flag_map.remove(x, z, y, south | east);
-                            self.collision_flag_map.remove(x + 1, z, y, west);
-                            self.collision_flag_map.remove(x, z - 1, y, north);
+                            self.flags.remove(x, z, y, south | east);
+                            self.flags.remove(x + 1, z, y, west);
+                            self.flags.remove(x, z - 1, y, north);
                         }
                     }
                     LocAngle::South => {
                         if add {
-                            self.collision_flag_map.add(x, z, y, south | west);
-                            self.collision_flag_map.add(x, z - 1, y, north);
-                            self.collision_flag_map.add(x - 1, z, y, east);
+                            self.flags.add(x, z, y, south | west);
+                            self.flags.add(x, z - 1, y, north);
+                            self.flags.add(x - 1, z, y, east);
                         } else {
-                            self.collision_flag_map.remove(x, z, y, south | west);
-                            self.collision_flag_map.remove(x, z - 1, y, north);
-                            self.collision_flag_map.remove(x - 1, z, y, east);
+                            self.flags.remove(x, z, y, south | west);
+                            self.flags.remove(x, z - 1, y, north);
+                            self.flags.remove(x - 1, z, y, east);
                         }
                     }
                 }
@@ -295,5 +295,9 @@ impl RSMod {
             }
             Err(str) => panic!("{}", str)
         }
+    }
+
+    pub fn allocate_if_absent(&mut self, x: i32, z: i32, y: u8) {
+        self.flags.allocate_if_absent(x, z, y);
     }
 }

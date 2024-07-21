@@ -40,7 +40,7 @@ impl GameMap {
         return (packed & 0x3f) as u8;
     }
 
-    pub fn init(&self, path: &str, rsmod: &mut RSMod, zone_map: &ZoneMap) {
+    pub fn init(&self, path: &str, rsmod: &mut RSMod, zone_map: &mut ZoneMap) {
         println!("Loading game map...");
         let start: Instant = Instant::now();
         let maps: Vec<String> = fs::read_dir(path)
@@ -78,6 +78,10 @@ impl GameMap {
         }
 
         println!("Loaded game map in: {:?}", Instant::now() - start);
+
+        println!("Zones: {}", zone_map.zone_count());
+        println!("Locs: {}", zone_map.loc_count());
+        println!("Objs: {}", zone_map.obj_count());
     }
 
     pub fn change_land(&self, rsmod: &mut RSMod, x: i32, z: i32, y: u8, add: bool) {
@@ -174,7 +178,7 @@ impl GameMap {
                 for z in 0..GameMap::Z {
                     let abs_z: i32 = (z as u16 + mapsquare_z) as i32;
                     if x % 7 == 0 && z % 7 == 0 {
-                        rsmod.collision_flag_map.allocate_if_absent(abs_x, abs_z, y);
+                        rsmod.allocate_if_absent(abs_x, abs_z, y);
                     }
 
                     let land = lands[GameMap::pack(x, z, y)];
@@ -198,7 +202,7 @@ impl GameMap {
         }
     }
 
-    fn locs(&self, rsmod: &mut RSMod, lands: &mut Vec<u8>, mut packet: Packet, mapsquare_x: u16, mapsquare_z: u16, zone_map: &ZoneMap) {
+    fn locs(&self, rsmod: &mut RSMod, lands: &mut Vec<u8>, mut packet: Packet, mapsquare_x: u16, mapsquare_z: u16, zone_map: &mut ZoneMap) {
         let mut loc_id: i32 = -1;
 
         loop {
@@ -234,6 +238,8 @@ impl GameMap {
 
                 let abs_x: i32 = (x as u16 + mapsquare_x) as i32;
                 let abs_z: i32 = (z as u16 + mapsquare_z) as i32;
+
+                zone_map.zone(abs_x, abs_z, abs_y as u8).add_static_loc();
 
                 self.change_loc(rsmod, shape, angle, false, 1, 1, 1, abs_x, abs_z, abs_y as u8, true);
             }

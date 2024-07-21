@@ -5,9 +5,9 @@ use lostcity::script::{ScriptProvider, ScriptState};
 
 fn main() {
     let mut rsmod: RSMod = RSMod::new();
-    let zone_map: ZoneMap = ZoneMap;
+    let mut zone_map: ZoneMap = ZoneMap::new();
     let game_map: GameMap = GameMap;
-    game_map.init("data/pack/server/maps/", &mut rsmod, &zone_map);
+    game_map.init("data/pack/server/maps/", &mut rsmod, &mut zone_map);
 
     // let provider = ScriptProvider::load("data/pack/server");
     // let fib = provider.get_by_name("[proc,fib]");
