@@ -9,3 +9,7 @@ criterion = "0.5.1"
 [[bench]]
 name = "lostcity"
 harness = false
+
+[[bin]]
+name = "runtime"
+path = "src/runtime.rs"

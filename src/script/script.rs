@@ -1,3 +1,4 @@
+use std::cmp;
 use std::collections::HashMap;
 use std::rc::Rc;
 use crate::io::Packet;
@@ -118,7 +119,7 @@ impl ScriptProvider {
         let mut dat = Packet::load(format!("{}/script.dat", path));
         let mut idx = Packet::load(format!("{}/script.idx", path));
 
-        let start = std::time::Instant::now();
+        // let start = std::time::Instant::now();
 
         let count = dat.g2();
         idx.pos = 2;
@@ -299,70 +300,317 @@ impl ScriptState {
             self.pc += 1;
             let opcode = self.script.opcodes[self.pc as usize];
 
-            let start = std::time::Instant::now();
-            match opcode {
-                0 => {
-                    // PUSH_CONSTANT_INT
-                    self.push_int(self.int_operand());
-                },
-                6 => {
-                    // BRANCH
-                    self.pc += self.int_operand();
-                },
-                9 => {
-                    // BRANCH_LESS_THAN
-                    let b = self.pop_int();
-                    let a = self.pop_int();
-                    if a < b {
-                        self.pc += self.int_operand();
-                    }
-                }
-                21 => {
-                    // RETURN
-                    if self.fp == 0 {
-                        self.execution_state = 1;
-                        break;
-                    }
+            // let start = std::time::Instant::now();
 
-                    self.pop_frame();
-                },
-                31 => {
-                    // BRANCH_LESS_THAN_OR_EQUALS
-                    let b = self.pop_int();
-                    let a = self.pop_int();
-                    if a <= b {
-                        self.pc += self.int_operand();
-                    }
-                },
-                33 => {
-                    // PUSH_INT_LOCAL
-                    let operand = self.int_operand();
-                    self.push_int(self.int_locals[operand as usize]);
-                },
-                34 => {
-                    // POP_INT_LOCAL
-                    let operand = self.int_operand();
-                    self.int_locals[operand as usize] = self.pop_int();
-                },
-                40 => {
-                    // GOSUB_WITH_PARAMS
-                    let operand = self.int_operand();
-                    self.push_frame(provider.get(operand as usize));
-                },
-                4600 => {
-                    // ADD
-                    let b = self.pop_int();
-                    let a = self.pop_int();
-                    self.push_int(a + b);
-                },
-                4601 => {
-                    // SUB
-                    let b = self.pop_int();
-                    let a = self.pop_int();
-                    self.push_int(a - b);
-                },
-                _ => panic!("Unknown opcode: {}", opcode),
+            // Core ops
+            if opcode == 0 {
+                // PUSH_CONSTANT_INT
+                self.push_int(self.int_operand());
+            } else if opcode == 3 {
+                // PUSH_CONSTANT_STRING
+                self.push_string(self.string_operand());
+            } else if opcode == 6 {
+                // BRANCH
+                self.pc += self.int_operand();
+            } else if opcode == 7 {
+                // BRANCH_NOT
+                let b = self.pop_int();
+                let a = self.pop_int();
+                if a != b {
+                    self.pc += self.int_operand();
+                }
+            } else if opcode == 8 {
+                // BRANCH_EQUALS
+                let b = self.pop_int();
+                let a = self.pop_int();
+                if a == b {
+                    self.pc += self.int_operand();
+                }
+            } else if opcode == 9 {
+                // BRANCH_LESS_THAN
+                let b = self.pop_int();
+                let a = self.pop_int();
+                if a < b {
+                    self.pc += self.int_operand();
+                }
+            } else if opcode == 10 {
+                // BRANCH_GREATER_THAN
+                let b = self.pop_int();
+                let a = self.pop_int();
+                if a > b {
+                    self.pc += self.int_operand();
+                }
+            } else if opcode == 21 {
+                // RETURN
+                if self.fp == 0 {
+                    self.execution_state = 1;
+                    break;
+                }
+
+                self.pop_frame();
+            } else if opcode == 22 {
+                // GOSUB
+                let operand = self.pop_int();
+                self.push_frame(provider.get(operand as usize));
+            } else if opcode == 23 {
+                // JUMP
+                panic!("Not implemented");
+            } else if opcode == 24 {
+                // SWITCH
+                panic!("Not implemented");
+            } else if opcode == 31 {
+                // BRANCH_LESS_THAN_OR_EQUALS
+                let b = self.pop_int();
+                let a = self.pop_int();
+                if a <= b {
+                    self.pc += self.int_operand();
+                }
+            } else if opcode == 32 {
+                // BRANCH_GREATER_THAN_OR_EQUALS
+                let b = self.pop_int();
+                let a = self.pop_int();
+                if a >= b {
+                    self.pc += self.int_operand();
+                }
+            } else if opcode == 33 {
+                // PUSH_INT_LOCAL
+                let operand = self.int_operand();
+                self.push_int(self.int_locals[operand as usize]);
+            } else if opcode == 34 {
+                // POP_INT_LOCAL
+                let operand = self.int_operand();
+                self.int_locals[operand as usize] = self.pop_int();
+            } else if opcode == 35 {
+                // PUSH_STRING_LOCAL
+                let operand = self.int_operand();
+                self.push_string(self.string_locals[operand as usize].clone());
+            } else if opcode == 36 {
+                // POP_STRING_LOCAL
+                let operand = self.int_operand();
+                self.string_locals[operand as usize] = self.pop_string();
+            } else if opcode == 37 {
+                // JOIN_STRING
+                panic!("Not implemented");
+            } else if opcode == 38 {
+                // POP_INT_DISCARD
+                self.isp -= 1;
+            } else if opcode == 39 {
+                // POP_STRING_DISCARD
+                self.ssp -= 1;
+            } else if opcode == 40 {
+                // GOSUB_WITH_PARAMS
+                let operand = self.int_operand();
+                self.push_frame(provider.get(operand as usize));
+            } else if opcode == 41 {
+                // JUMP_WITH_PARAMS
+                panic!("Not implemented");
+            } else if opcode == 44 {
+                // DEFINE_ARRAY
+                panic!("Not implemented");
+            } else if opcode == 45 {
+                // PUSH_ARRAY_INT
+                panic!("Not implemented");
+            } else if opcode == 46 {
+                // POP_ARRAY_INT
+                panic!("Not implemented");
             }
+            // String ops
+            else if opcode == 4500 {
+                // APPEND_NUM
+                panic!("Not implemented");
+            } else if opcode == 4501 {
+                // APPEND
+                panic!("Not implemented");
+            } else if opcode == 4502 {
+                // APPEND_SIGNNUM
+                panic!("Not implemented");
+            } else if opcode == 4503 {
+                // LOWERCASE
+                panic!("Not implemented");
+            } else if opcode == 4504 {
+                // FROMDATE
+                panic!("Not implemented");
+            } else if opcode == 4505 {
+                // TEXT_GENDER
+                panic!("Not implemented");
+            } else if opcode == 4506 {
+                // TOSTRING
+                panic!("Not implemented");
+            } else if opcode == 4507 {
+                // COMPARE
+                panic!("Not implemented");
+            } else if opcode == 4508 {
+                // PARAHEIGHT
+                panic!("Not implemented");
+            } else if opcode == 4509 {
+                // PARAWIDTH
+                panic!("Not implemented");
+            } else if opcode == 4510 {
+                // TEXT_SWITCH
+                panic!("Not implemented");
+            } else if opcode == 4511 {
+                // ESCAPE
+                panic!("Not implemented");
+            } else if opcode == 4512 {
+                // APPEND_CHAR
+                panic!("Not implemented");
+            } else if opcode == 4513 {
+                // CHAR_ISPRINTABLE
+                panic!("Not implemented");
+            } else if opcode == 4514 {
+                // CHAR_ISALPHANUMERIC
+                panic!("Not implemented");
+            } else if opcode == 4515 {
+                // CHAR_ISALPHA
+                panic!("Not implemented");
+            } else if opcode == 4516 {
+                // CHAR_ISNUMERIC
+                panic!("Not implemented");
+            } else if opcode == 4517 {
+                // STRING_LENGTH
+                panic!("Not implemented");
+            } else if opcode == 4518 {
+                // SUBSTRING
+                panic!("Not implemented");
+            } else if opcode == 4519 {
+                // REMOVETAGS
+                panic!("Not implemented");
+            } else if opcode == 4520 {
+                // STRING_INDEXOF_CHAR
+                panic!("Not implemented");
+            } else if opcode == 4521 {
+                // STRING_INDEXOF_STRING
+                panic!("Not implemented");
+            } else if opcode == 4522 {
+                // CHAR_TOLOWERCASE
+                panic!("Not implemented");
+            } else if opcode == 4523 {
+                // CHAR_TOUPPERCASE
+                panic!("Not implemented");
+            } else if opcode == 4524 {
+                // STRING_TOUPPERCASE
+                panic!("Not implemented");
+            } else if opcode == 4525 {
+                // STRING_TOLOWERCASE
+                panic!("Not implemented");
+            } else if opcode == 4526 {
+                // TOSTRING_LOCALISED
+                panic!("Not implemented");
+            } else if opcode == 4527 {
+                // STRINGWIDTH
+                panic!("Not implemented");
+            }
+            // Math ops
+            else if opcode == 4600 {
+                // ADD
+                let b = self.pop_int();
+                let a = self.pop_int();
+                self.push_int(a + b);
+            } else if opcode == 4601 {
+                // SUB
+                let b = self.pop_int();
+                let a = self.pop_int();
+                self.push_int(a - b);
+            } else if opcode == 4602 {
+                // MULTIPLY
+                let b = self.pop_int();
+                let a = self.pop_int();
+                self.push_int(a * b);
+            } else if opcode == 4603 {
+                // DIVIDE
+                let b = self.pop_int();
+                let a = self.pop_int();
+                self.push_int(a / b);
+            } else if opcode == 4604 {
+                // RANDOM
+                panic!("Not implemented");
+            } else if opcode == 4605 {
+                // RANDOMINC
+                panic!("Not implemented");
+            } else if opcode == 4606 {
+                // INTERPOLATE
+                panic!("Not implemented");
+            } else if opcode == 4607 {
+                // ADDPERCENT
+                panic!("Not implemented");
+            } else if opcode == 4608 {
+                // SETBIT
+                panic!("Not implemented");
+            } else if opcode == 4609 {
+                // CLEARBIT
+                panic!("Not implemented");
+            } else if opcode == 4610 {
+                // TESTBIT
+                panic!("Not implemented");
+            } else if opcode == 4611 {
+                // MODULO
+                panic!("Not implemented");
+            } else if opcode == 4612 {
+                // POW
+                let b = self.pop_int();
+                let a = self.pop_int();
+                self.push_int(a.pow(b as u32));
+            } else if opcode == 4613 {
+                // INVPOW
+                panic!("Not implemented");
+            } else if opcode == 4614 {
+                // AND
+                let b = self.pop_int();
+                let a = self.pop_int();
+                self.push_int(a & b);
+            } else if opcode == 4615 {
+                // OR
+                let b = self.pop_int();
+                let a = self.pop_int();
+                self.push_int(a | b);
+            } else if opcode == 4616 {
+                // MIN
+                let b = self.pop_int();
+                let a = self.pop_int();
+                self.push_int(cmp::min(a, b));
+            } else if opcode == 4617 {
+                // MAX
+                let b = self.pop_int();
+                let a = self.pop_int();
+                self.push_int(cmp::max(a, b));
+            } else if opcode == 4618 {
+                // SCALE
+                panic!("Not implemented");
+            } else if opcode == 4619 {
+                // BITCOUNT
+                panic!("Not implemented");
+            } else if opcode == 4620 {
+                // TOGGLEBIT
+                panic!("Not implemented");
+            } else if opcode == 4621 {
+                // SETBIT_RANGE
+                panic!("Not implemented");
+            } else if opcode == 4622 {
+                // CLEARBIT_RANGE
+                panic!("Not implemented");
+            } else if opcode == 4623 {
+                // GETBIT_RANGE
+                panic!("Not implemented");
+            } else if opcode == 4624 {
+                // SETBIT_RANGE_TOINT
+                panic!("Not implemented");
+            } else if opcode == 4625 {
+                // SIN_DEG
+                panic!("Not implemented");
+            } else if opcode == 4626 {
+                // COS_DEG
+                panic!("Not implemented");
+            } else if opcode == 4627 {
+                // ATAN2_DEG
+                panic!("Not implemented");
+            } else if opcode == 4628 {
+                // ABS
+                let a = self.pop_int();
+                self.push_int(a.abs());
+            } else {
+                panic!("Unknown opcode: {}", opcode);
+            }
+
             // println!("op: {} took {:?}", opcode, start.elapsed());
 
             self.opcount += 1;
