@@ -19,7 +19,7 @@ impl CollisionFlagMap {
     }
 
     pub fn new() -> CollisionFlagMap {
-        CollisionFlagMap {
+        return CollisionFlagMap {
             flags: vec![vec![]; CollisionFlagMap::TOTAL_ZONE_COUNT as usize]
         }
     }

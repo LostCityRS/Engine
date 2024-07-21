@@ -1,3 +1,5 @@
+use crate::game::{Entity, Loc, Npc, Obj, PathingEntity, World};
+
 pub struct Zone {
     pub index: i32,
     pub total_locs: i32,
@@ -13,11 +15,27 @@ impl Zone {
         }
     }
 
-    pub fn add_static_obj(&mut self) {
+    pub fn enter(&self, entity: impl PathingEntity) {
+        entity.enter(self);
+    }
+
+    pub fn leave(&self, entity: impl PathingEntity) {
+        entity.leave(self);
+    }
+
+    pub fn add_npc(&self, mut npc: Npc) {
+
+    }
+
+    pub fn del_npc(&self, npc: Npc) {
+
+    }
+
+    pub fn add_static_obj(&mut self, obj: Obj) {
         self.total_objs += 1;
     }
 
-    pub fn add_static_loc(&mut self) {
+    pub fn add_static_loc(&mut self, loc: Loc) {
         self.total_locs += 1;
     }
 }

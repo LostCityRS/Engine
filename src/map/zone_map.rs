@@ -9,7 +9,7 @@ pub struct ZoneMap {
 
 impl ZoneMap {
     pub fn new() -> ZoneMap {
-        ZoneMap {
+        return ZoneMap {
             zones: HashMap::new(),
             grids: HashMap::new()
         }

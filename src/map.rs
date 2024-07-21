@@ -5,3 +5,5 @@ mod zone_grid;
 
 pub use game_map::GameMap;
 pub use zone_map::ZoneMap;
+pub use zone::Zone;
+pub use zone_grid::ZoneGrid;

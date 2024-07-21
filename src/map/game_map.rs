@@ -1,5 +1,6 @@
 use std::fs;
 use std::time::Instant;
+use crate::game::{EntityLifeCycle, Loc, Npc, Obj};
 use crate::io::Packet;
 use crate::map::zone_map::ZoneMap;
 use crate::rsmod::{LocAngle, LocLayer, RSMod};
@@ -40,6 +41,10 @@ impl GameMap {
         return (packed & 0x3f) as u8;
     }
 
+    pub fn new() -> GameMap {
+        return GameMap {}
+    }
+
     pub fn init(&self, path: &str, rsmod: &mut RSMod, zone_map: &mut ZoneMap) {
         println!("Loading game map...");
         let start: Instant = Instant::now();
@@ -70,7 +75,7 @@ impl GameMap {
             let mapsquare_x: u16 = (mx << 6) as u16;
             let mapsquare_z: u16 = (mz << 6) as u16;
 
-            self.npcs(Packet::load(format!("{}n{}_{}", path, mx, mz)), mapsquare_x, mapsquare_z);
+            self.npcs(Packet::load(format!("{}n{}_{}", path, mx, mz)), mapsquare_x, mapsquare_z, zone_map);
             self.objs(Packet::load(format!("{}o{}_{}", path, mx, mz)), mapsquare_x, mapsquare_z, zone_map);
             let mut lands: Vec<u8> = vec![0; GameMap::MAPSQUARE];
             self.lands(rsmod, &mut lands, Packet::load(format!("{}m{}_{}", path, mx, mz)), mapsquare_x, mapsquare_z);
@@ -123,29 +128,35 @@ impl GameMap {
         rsmod.change_roof(x, z, y, add);
     }
 
-    fn npcs(&self, mut packet: Packet, mapsquare_x: u16, mapsquare_z: u16) {
+    fn npcs(&self, mut packet: Packet, mapsquare_x: u16, mapsquare_z: u16, zone_map: &mut ZoneMap) {
         while packet.avail() > 0 {
             let packed: u16 = packet.g2();
-            let x: u16 = mapsquare_x + GameMap::x(packed) as u16;
-            let z: u16 = mapsquare_z + GameMap::z(packed) as u16;
-            let y: u8 = GameMap::y(packed);
+            let abs_x: i32 = (mapsquare_x + GameMap::x(packed) as u16) as i32;
+            let abs_z: i32 = (mapsquare_z + GameMap::z(packed) as u16) as i32;
+            let abs_y: u8 = GameMap::y(packed);
             let count: u8 = packet.g1();
             for _index in 0..count {
+                // TODO cache loader
                 let npc_type: u16 = packet.g2();
+                let npc: Npc = Npc::new(abs_y, abs_x, abs_z, 1, 1, EntityLifeCycle::Respawn, npc_type);
+                zone_map.zone(npc.base.x, npc.base.z, npc.base.y).enter(npc);
             }
         }
     }
 
-    fn objs(&self, mut packet: Packet, mapsquare_x: u16, mapsquare_z: u16, zone_map: &ZoneMap) {
+    fn objs(&self, mut packet: Packet, mapsquare_x: u16, mapsquare_z: u16, zone_map: &mut ZoneMap) {
         while packet.avail() > 0 {
             let packed: u16 = packet.g2();
-            let x: u16 = mapsquare_x + GameMap::x(packed) as u16;
-            let z: u16 = mapsquare_z + GameMap::z(packed) as u16;
-            let y: u8 = GameMap::y(packed);
+            let abs_x: i32 = (mapsquare_x + GameMap::x(packed) as u16) as i32;
+            let abs_z: i32 = (mapsquare_z + GameMap::z(packed) as u16) as i32;
+            let abs_y: u8 = GameMap::y(packed);
             let count: u8 = packet.g1();
             for _index in 0..count {
+                // TODO cache loader
                 let obj_type: u16 = packet.g2();
                 let obj_count: u8 = packet.g1();
+                let obj: Obj = Obj::new(abs_y, abs_x, abs_z, EntityLifeCycle::Respawn, obj_type, obj_count as i32);
+                zone_map.zone(obj.base.x, obj.base.z, obj.base.y).add_static_obj(obj);
             }
         }
     }
@@ -233,13 +244,14 @@ impl GameMap {
                     continue;
                 }
 
+                // TODO cache loader
                 let shape: u8 = info >> 2;
                 let angle: u8 = info & 0x3;
 
                 let abs_x: i32 = (x as u16 + mapsquare_x) as i32;
                 let abs_z: i32 = (z as u16 + mapsquare_z) as i32;
 
-                zone_map.zone(abs_x, abs_z, abs_y as u8).add_static_loc();
+                zone_map.zone(abs_x, abs_z, abs_y as u8).add_static_loc(Loc::new(abs_y as u8, abs_x, abs_z, 1, 1, EntityLifeCycle::Respawn, loc_id as u16, shape, angle));
 
                 self.change_loc(rsmod, shape, angle, false, 1, 1, 1, abs_x, abs_z, abs_y as u8, true);
             }
