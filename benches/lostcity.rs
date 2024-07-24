@@ -2,6 +2,7 @@ use criterion::*;
 use lostcity::io::Packet;
 
 fn worst_case(packet: &mut Packet) {
+    packet.bit_pos = 0;
     for _ in 0..45714 {
         // result: 201 147 38 76 153 50 100 over and over
         packet.pbit(7, 100);
