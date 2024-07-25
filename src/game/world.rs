@@ -1,7 +1,7 @@
 use std::thread::sleep;
 use std::time::{Duration, Instant};
 use crate::game::world_stat::WorldStat;
-use crate::map::{GameMap, NpcDeque, Zone, ZoneGrid, ZoneMap};
+use crate::map::{GameMap, NpcDeque, PlayerDeque, ZoneMap};
 use crate::rsmod::RSMod;
 
 pub struct World {
@@ -11,6 +11,7 @@ pub struct World {
     pub game_map: GameMap,
     pub zone_map: ZoneMap,
     pub npc_loader: NpcDeque,
+    pub player_loader: PlayerDeque,
     pub stats: Vec<Duration>,
     pub last_stats: Vec<Duration>
 }
@@ -23,6 +24,7 @@ impl World {
             rsmod: RSMod::new(),
             game_map: GameMap::new(),
             zone_map: ZoneMap::new(),
+            player_loader: PlayerDeque::new(),
             npc_loader: NpcDeque::new(),
             stats: vec![Duration::new(0, 0); 12],
             last_stats: vec![Duration::new(0, 0); 12]
