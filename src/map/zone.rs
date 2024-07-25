@@ -1,7 +1,9 @@
-use crate::game::{Entity, Loc, Npc, Obj, PathingEntity, World};
+use std::collections::HashSet;
+use crate::game::{Loc, Npc, Obj};
 
 pub struct Zone {
     pub index: i32,
+    pub npcs: HashSet<i32>,
     pub total_locs: i32,
     pub total_objs: i32
 }
@@ -10,25 +12,18 @@ impl Zone {
     pub fn new(index: i32) -> Zone {
         Zone {
             index,
+            npcs: HashSet::new(),
             total_locs: 0,
             total_objs: 0
         }
     }
 
-    pub fn enter(&self, entity: impl PathingEntity) {
-        entity.enter(self);
+    pub fn add_npc(&mut self, npc: &Npc) {
+        self.npcs.insert(npc.nid);
     }
 
-    pub fn leave(&self, entity: impl PathingEntity) {
-        entity.leave(self);
-    }
-
-    pub fn add_npc(&self, mut npc: Npc) {
-
-    }
-
-    pub fn del_npc(&self, npc: Npc) {
-
+    pub fn del_npc(&mut self, npc: &Npc) {
+        self.npcs.remove(&npc.nid);
     }
 
     pub fn add_static_obj(&mut self, obj: Obj) {

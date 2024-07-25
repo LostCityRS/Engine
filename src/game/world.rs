@@ -1,7 +1,7 @@
 use std::thread::sleep;
 use std::time::{Duration, Instant};
 use crate::game::world_stat::WorldStat;
-use crate::map::{GameMap, Zone, ZoneGrid, ZoneMap};
+use crate::map::{GameMap, NpcDeque, Zone, ZoneGrid, ZoneMap};
 use crate::rsmod::RSMod;
 
 pub struct World {
@@ -10,6 +10,7 @@ pub struct World {
     pub rsmod: RSMod,
     pub game_map: GameMap,
     pub zone_map: ZoneMap,
+    pub npc_loader: NpcDeque,
     pub stats: Vec<Duration>,
     pub last_stats: Vec<Duration>
 }
@@ -22,6 +23,7 @@ impl World {
             rsmod: RSMod::new(),
             game_map: GameMap::new(),
             zone_map: ZoneMap::new(),
+            npc_loader: NpcDeque::new(),
             stats: vec![Duration::new(0, 0); 12],
             last_stats: vec![Duration::new(0, 0); 12]
         }
@@ -31,7 +33,7 @@ impl World {
         println!("Starting world...");
 
         if !skip_maps {
-            self.game_map.init("data/pack/server/maps/", &mut self.rsmod, &mut self.zone_map)
+            self.game_map.init("data/pack/server/maps/", &mut self.rsmod, &mut self.zone_map, &mut self.npc_loader)
         }
 
         println!("World ready");
@@ -145,6 +147,7 @@ impl World {
     // - npc hunt
     fn process_world(&mut self) {
         let start: Instant = Instant::now();
+        self.npc_loader.pop_queue(&mut self.zone_map);
         // TODO
         self.stats[WorldStat::World as usize] = Instant::now() - start
     }
@@ -234,17 +237,5 @@ impl World {
         let start: Instant = Instant::now();
         // TODO
         self.stats[WorldStat::Cleanup as usize] = Instant::now() - start
-    }
-
-    pub fn zone(&mut self, x: i32, z: i32, y: u8) -> &Zone {
-        return self.zone_map.zone(x, z, y);
-    }
-
-    pub fn zone_by_index(&mut self, index: i32) -> &Zone {
-        return self.zone_map.zone_by_index(index);
-    }
-
-    pub fn zone_grid(&mut self, y: u8) -> &ZoneGrid {
-        return self.zone_map.grid(y);
     }
 }

@@ -2,6 +2,7 @@ use std::fs;
 use std::time::Instant;
 use crate::game::{EntityLifeCycle, Loc, Npc, Obj};
 use crate::io::Packet;
+use crate::map::NpcDeque;
 use crate::map::zone_map::ZoneMap;
 use crate::rsmod::{LocAngle, LocLayer, RSMod};
 
@@ -45,7 +46,7 @@ impl GameMap {
         return GameMap {}
     }
 
-    pub fn init(&self, path: &str, rsmod: &mut RSMod, zone_map: &mut ZoneMap) {
+    pub fn init(&self, path: &str, rsmod: &mut RSMod, zone_map: &mut ZoneMap, npc_loader: &mut NpcDeque) {
         println!("Loading game map...");
         let start: Instant = Instant::now();
         let maps: Vec<String> = fs::read_dir(path)
@@ -75,7 +76,7 @@ impl GameMap {
             let mapsquare_x: u16 = (mx << 6) as u16;
             let mapsquare_z: u16 = (mz << 6) as u16;
 
-            self.npcs(Packet::load(format!("{}n{}_{}", path, mx, mz)), mapsquare_x, mapsquare_z, zone_map);
+            self.npcs(Packet::load(format!("{}n{}_{}", path, mx, mz)), mapsquare_x, mapsquare_z, npc_loader);
             self.objs(Packet::load(format!("{}o{}_{}", path, mx, mz)), mapsquare_x, mapsquare_z, zone_map);
             let mut lands: Vec<u8> = vec![0; GameMap::MAPSQUARE];
             self.lands(rsmod, &mut lands, Packet::load(format!("{}m{}_{}", path, mx, mz)), mapsquare_x, mapsquare_z);
@@ -128,7 +129,7 @@ impl GameMap {
         rsmod.change_roof(x, z, y, add);
     }
 
-    fn npcs(&self, mut packet: Packet, mapsquare_x: u16, mapsquare_z: u16, zone_map: &mut ZoneMap) {
+    fn npcs(&self, mut packet: Packet, mapsquare_x: u16, mapsquare_z: u16, npc_loader: &mut NpcDeque) {
         while packet.avail() > 0 {
             let packed: u16 = packet.g2();
             let abs_x: i32 = (mapsquare_x + GameMap::x(packed) as u16) as i32;
@@ -138,8 +139,7 @@ impl GameMap {
             for _index in 0..count {
                 // TODO cache loader
                 let npc_type: u16 = packet.g2();
-                let npc: Npc = Npc::new(abs_y, abs_x, abs_z, 1, 1, EntityLifeCycle::Respawn, npc_type);
-                zone_map.zone(npc.base.x, npc.base.z, npc.base.y).enter(npc);
+                npc_loader.push_back(Npc::new(abs_y, abs_x, abs_z, 1, 1, EntityLifeCycle::Respawn, 1, npc_type));
             }
         }
     }
