@@ -25,83 +25,43 @@ impl CollisionFlagMap {
         }
     }
 
+    #[inline(always)]
     pub fn get(&self, x: i32, z: i32, y: u8) -> u32 {
         let tile_index: usize = CollisionFlagMap::tile_index(x, z);
 
         return match self.flags.get(&CollisionFlagMap::zone_index(x, z, y)) {
             None => CollisionFlag::Null as u32,
-            Some(flags) => {
-                if flags.len() > 0 {
-                    flags[tile_index]
-                } else {
-                    CollisionFlag::Null as u32
-                }
-            }
+            Some(flags) => flags[tile_index]
         }
     }
 
+    #[inline(always)]
     pub fn set(&mut self, x: i32, z: i32, y: u8, mask: u32) {
-        let tile_index: usize = CollisionFlagMap::tile_index(x, z);
-
-        self.allocate_if_absent(x, z, y);
-
-        match self.flags.get_mut(&CollisionFlagMap::zone_index(x, z, y)) {
-            None => {}
-            Some(flags) => flags[tile_index] = mask
-        }
+        self.allocate_if_absent(x, z, y)[CollisionFlagMap::tile_index(x, z)] = mask
     }
 
+    #[inline(always)]
     pub fn add(&mut self, x: i32, z: i32, y: u8, mask: u32) {
-        let tile_index: usize = CollisionFlagMap::tile_index(x, z);
-
-        let mut current: u32 = CollisionFlag::Open as u32;
-
-        match self.flags.get(&CollisionFlagMap::zone_index(x, z, y)) {
-            None => {}
-            Some(flags) => {
-                if flags.len() > 0 {
-                    current = flags[tile_index];
-                }
-            }
-        }
-
-        self.set(x, z, y, current | mask);
+        self.allocate_if_absent(x, z, y)[CollisionFlagMap::tile_index(x, z)] |= mask;
     }
 
+    #[inline(always)]
     pub fn remove(&mut self, x: i32, z: i32, y: u8, mask: u32) {
-        let tile_index: usize = CollisionFlagMap::tile_index(x, z);
-
-        let mut current: u32 = CollisionFlag::Open as u32;
-
-        match self.flags.get(&CollisionFlagMap::zone_index(x, z, y)) {
-            None => {}
-            Some(flags) => {
-                if flags.len() > 0 {
-                    current = flags[tile_index];
-                }
-            }
-        }
-
-        self.set(x, z, y, current & !mask);
+        self.allocate_if_absent(x, z, y)[CollisionFlagMap::tile_index(x, z)] &= !mask;
     }
 
-    pub fn allocate_if_absent(&mut self, x: i32, z: i32, y: u8) {
-        let zone_index: usize = CollisionFlagMap::zone_index(x, z, y);
-
-        match self.flags.get(&zone_index) {
-            None => return,
-            Some(flags) => {
-                if flags.len() > 0 {
-                    return;
-                }
-            }
-        }
-
-        self.flags.insert(zone_index, [CollisionFlag::Open as u32; CollisionFlagMap::ZONE_TILE_COUNT]);
+    #[inline(always)]
+    pub fn allocate_if_absent(&mut self, x: i32, z: i32, y: u8) -> &mut [u32; CollisionFlagMap::ZONE_TILE_COUNT] {
+        return self.flags.entry(CollisionFlagMap::zone_index(x, z, y)).or_insert([CollisionFlag::Open as u32; CollisionFlagMap::ZONE_TILE_COUNT]);
     }
 
+    #[inline(always)]
     pub fn isFlagged(&self, x: i32, z: i32, level: u8, masks: u32) -> bool {
-        return (self.get(x, z, level) & masks) != CollisionFlag::Open as u32;
+        let current = self.get(x, z, level);
+        if current == CollisionFlag::Null as u32 {
+            return false;
+        }
+        return (current & masks) != CollisionFlag::Open as u32;
     }
 }
 

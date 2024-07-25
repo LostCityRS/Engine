@@ -89,5 +89,5 @@ pub enum CollisionFlag {
     BlockNorthEastAndWestRouteBlocker = 0x400000 | 0x800000 | 0x1000000 | 0x2000000 | 0x20000000 | 0x40000000 | 0x200000 | 0x40000,
     BlockSouthEastAndWestRouteBlocker = 0x2000000 | 0x4000000 | 0x8000000 | 0x10000000 | 0x20000000 | 0x40000000 | 0x200000 | 0x40000,
 
-    Null = 0xFFFFFFFF,
+    Null = 0x7FFFFFFF,
 }
