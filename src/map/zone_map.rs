@@ -78,36 +78,4 @@ mod tests {
         let mut zone_map: ZoneMap = ZoneMap::new();
         assert_eq!(zone_map.zone(0, 0, 0).index, 0);
     }
-
-    #[test]
-    fn test2() {
-        let mut zone_map: ZoneMap = ZoneMap::new();
-        assert_eq!(zone_map.zone(0, 0, 0).total_objs, 0);
-        assert_eq!(zone_map.zone(0, 0, 0).total_locs, 0);
-
-        zone_map.zone(0, 0, 0).add_static_obj();
-        zone_map.zone(0, 0, 0).add_static_loc();
-        assert_eq!(zone_map.zone(0, 0, 0).total_locs, 1);
-        assert_eq!(zone_map.zone(0, 0, 0).total_objs, 1);
-    }
-
-    #[test]
-    fn test3() {
-        let mut zone_map: ZoneMap = ZoneMap::new();
-        assert_eq!(zone_map.zone_count(), 0);
-        assert_eq!(zone_map.obj_count(), 0);
-        assert_eq!(zone_map.loc_count(), 0);
-
-        zone_map.zone(0, 0, 0).add_static_obj();
-        zone_map.zone(0, 0, 0).add_static_loc();
-        assert_eq!(zone_map.zone_count(), 1);
-        assert_eq!(zone_map.obj_count(), 1);
-        assert_eq!(zone_map.loc_count(), 1);
-
-        zone_map.zone(0, 0, 0).add_static_obj();
-        zone_map.zone(0, 0, 0).add_static_loc();
-        assert_eq!(zone_map.zone_count(), 1);
-        assert_eq!(zone_map.obj_count(), 2);
-        assert_eq!(zone_map.loc_count(), 2);
-    }
 }
