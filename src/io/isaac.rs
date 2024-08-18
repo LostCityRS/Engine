@@ -9,7 +9,7 @@ pub struct Isaac {
 }
 
 impl Isaac {
-    pub fn new(seed: Vec<u32>) -> Self {
+    pub fn new(seed: Vec<u32>) -> Isaac {
         let mut isaac = Isaac {
             rsl: vec![0; 256],
             mem: vec![0; 256],
