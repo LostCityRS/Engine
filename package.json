@@ -18,6 +18,8 @@
     "lzma-native": "^8.0.6"
   },
   "scripts": {
+    "start": "npm run ts-loader src/app.ts",
+    "bun:start": "bun run src/app.ts",
     "ts-loader": "node --experimental-strip-types --experimental-transform-types"
   }
 }

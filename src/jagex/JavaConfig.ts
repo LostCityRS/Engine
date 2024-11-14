@@ -3,10 +3,10 @@ import fs from 'fs';
 
 import axios from 'axios';
 
-import { downloadInMemory, downloadToFile } from './HttpUtils.ts';
-import { decompressLzma } from './3rdparty/lzma/index.ts';
+import { downloadInMemory, downloadToFile } from '../util/HttpUtils.ts';
+import { decompressLzma } from '../3rdparty/lzma/index.ts';
 
-export enum ClientBinaryType {
+export enum NxtClientBinaryType {
     WinXP, // removed
     Win32, // removed
     Win64,
@@ -132,7 +132,7 @@ export class JavaConfig {
         }
     }
 
-    static async decodeFromRs3(type: ClientBinaryType) {
+    static async decodeFromRs3(type: NxtClientBinaryType) {
         const config = await JavaConfig.decodeFromUrl(`https://www.runescape.com/jav_config.ws?binaryType=${type}`);
 
         if (config) {
@@ -146,7 +146,7 @@ export class JavaConfig {
         return JavaConfig.decodeFromUrl('https://oldschool.runescape.com/jav_config.ws');
     }
 
-    binaryType: ClientBinaryType | null = null;
+    binaryType: NxtClientBinaryType | null = null;
 
     title: string = '';
     advertUrl: string = '';
