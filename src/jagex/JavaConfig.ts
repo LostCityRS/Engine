@@ -146,8 +146,19 @@ export class JavaConfig {
         return JavaConfig.decodeFromUrl('https://oldschool.runescape.com/jav_config.ws');
     }
 
+    get token(): string {
+        for (const [, value] of this.param) {
+            if (value.match(/^[A-Za-z0-9*-]{32}$/)) {
+                return value;
+            }
+        }
+
+        return '';
+    }
+
     binaryType: NxtClientBinaryType | null = null;
 
+    // all
     title: string = '';
     advertUrl: string = '';
     codeBase: string = '';
@@ -273,7 +284,7 @@ export class JavaConfig {
             output.push(`param=${key}=${value}`);
         }
 
-        output.push(''); // seems to add a newline no matter what
+        output.push(''); // [they] seem to add a newline no matter what
         return output.join('\n');
     }
 
@@ -326,6 +337,7 @@ export class JavaConfig {
         clientArgs.push('931'); // outdated revision...?
 
         if (process.platform !== 'win32') {
+            // chmod +x
             fs.chmodSync(`data/client/${this.binaryName}`, 755);
         }
 
