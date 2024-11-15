@@ -9,9 +9,9 @@ export default class Packet {
     #view: DataView;
 
     constructor(data: Uint8Array, pos: number = 0) {
-        this.#data = data;
+        this.#data = new Uint8Array(data);
         this.pos = pos;
-        this.#view = new DataView(data.buffer);
+        this.#view = new DataView(this.#data.buffer);
     }
 
     get available(): number {
@@ -24,6 +24,97 @@ export default class Packet {
 
     get data(): Uint8Array {
         return this.#data.subarray(0, this.pos);
+    }
+
+    g1(): number {
+        return this.#view.getUint8(this.pos++);
+    }
+
+    g1b(): number {
+        return this.#view.getInt8(this.pos++);
+    }
+
+    g2(): number {
+        this.pos += 2;
+        return this.#view.getUint16(this.pos - 2);
+    }
+
+    g2s(): number {
+        this.pos += 2;
+        return this.#view.getInt16(this.pos - 2);
+    }
+
+    g3(): number {
+        const result: number = (this.#view.getUint8(this.pos++) << 16) | this.#view.getUint16(this.pos);
+        this.pos += 2;
+        return result;
+    }
+
+    g4(): number {
+        this.pos += 4;
+        return this.#view.getInt32(this.pos - 4);
+    }
+
+    g8(): bigint {
+        this.pos += 8;
+        return this.#view.getBigInt64(this.pos - 8);
+    }
+
+    gbool(): boolean {
+        return this.g1() === 1;
+    }
+
+    gdata(dest: Uint8Array, offset: number, length: number): void {
+        dest.set(this.data.subarray(this.pos, this.pos + length), offset);
+        this.pos += length;
+    }
+
+    gjstr(terminator: number = 0): string {
+        const length: number = this.data.length;
+        let str: string = '';
+        let b: number;
+        while ((b = this.#view.getUint8(this.pos++)) !== terminator && this.pos < length) {
+            str += String.fromCharCode(b);
+        }
+        return str;
+    }
+
+    fastgstr(): string | null {
+        if (this.data[this.pos] === 0) {
+            this.pos++;
+            return null;
+        } else {
+            return this.gjstr();
+        }
+    }
+
+    gjstr2(): string {
+        const version: number = this.#view.getUint8(this.pos++);
+        if (version !== 0) {
+            throw new Error();
+        }
+        return this.gjstr();
+    }
+
+    gSmart1or2(): number {
+        return this.#view.getUint8(this.pos) < 128 ? this.g1() : this.g2() - 32768;
+    }
+
+    gSmart1or2s(): number {
+        return this.#view.getUint8(this.pos) < 128 ? this.g1() - 64 : this.g2s() - 49152;
+    }
+
+    gSmart2or4(): number {
+        return this.#view.getUint8(this.pos) >= 128 ? this.g4() & 0x7fffffff : this.g2();
+    }
+
+    gSmart2or4null(): number {
+        if (this.#view.getUint8(this.pos) >= 128) {
+            return this.g4() & 0x7fffffff;
+        } else {
+            const val: number = this.g2();
+            return val === 32767 ? -1 : val;
+        }
     }
 
     p1(value: number): void {

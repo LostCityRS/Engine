@@ -4,6 +4,177 @@ import net from 'net';
 import { JavaConfig, NxtClientBinaryType } from '../jagex/JavaConfig.ts';
 import Packet from '../jagex/Packet.ts';
 
+function sleep(ms: number) {
+    return new Promise((res) => {
+        setTimeout(res, ms);
+    });
+}
+
+class ClientStream {
+    static async connect(host: string, port: number): Promise<ClientStream> {
+        return new Promise((res) => {
+            const socket = net.createConnection({ host, port }, () => {
+                res(new ClientStream(socket));
+            });
+        });
+    }
+
+    socket: net.Socket;
+    closed: boolean = false;
+    ioerror: boolean = false;
+    buf: Buffer = Buffer.alloc(0);
+    bufPos: number = 0;
+
+    constructor(socket: net.Socket) {
+        this.socket = socket;
+        this.socket.setNoDelay(true);
+        this.socket.setTimeout(30000);
+
+        this.socket.on('data', (data) => {
+            console.log('read', data);
+            this.buf = Buffer.concat([this.buf, data]);
+        });
+
+        this.socket.on('close', () => {
+            this.close();
+        });
+
+        this.socket.on('error', () => {
+            this.ioerror = true;
+            this.close();
+        });
+    }
+
+    close() {
+        this.closed = true;
+
+        if (this.socket) {
+            this.socket.end();
+        }
+    }
+
+    // wait for 1 byte to be read off the socket
+    async read(): Promise<number> {
+        if (this.closed && this.available === 0) {
+            return -1;
+        }
+
+        while (this.available < 1) {
+            await sleep(1);
+        }
+
+        const value = this.buf[this.bufPos++];
+
+        if (this.bufPos >= 5000) {
+            // shrink if at least 5kb has been read
+            this.buf = this.buf.subarray(this.bufPos);
+            this.bufPos = 0;
+        }
+
+        return value;
+    }
+
+    async readBytes(dest: Uint8Array | Buffer, len: number = dest.length, off: number = 0): Promise<boolean> {
+        if (this.closed && this.available < len) {
+            return false;
+        }
+
+        while (this.available < len) {
+            await sleep(1);
+        }
+
+        dest.set(this.buf.subarray(this.bufPos, this.bufPos + len), off);
+        this.bufPos += len;
+
+        if (this.bufPos >= 5000) {
+            // shrink if at least 5kb has been read
+            this.buf = this.buf.subarray(this.bufPos);
+            this.bufPos = 0;
+        }
+
+        return true;
+    }
+
+    get available() {
+        return this.closed ? 0 : this.buf.length - this.bufPos;
+    }
+
+    write(src: Uint8Array | Buffer, len: number = src.length, off: number = 0) {
+        if (this.closed) {
+            return;
+        }
+
+        console.log('write', src);
+        if (len === src.length && off === 0) {
+            this.socket.write(src);
+        } else {
+            this.socket.write(src.subarray(off, off + len));
+        }
+    }
+}
+
+class Js5TcpClient {
+    static async connectToRs3() {
+        return new Js5TcpClient(await ClientStream.connect('content.runescape.com', 443));
+    }
+
+    stream: ClientStream;
+
+    constructor(stream: ClientStream) {
+        this.stream = stream;
+    }
+
+    async init(config: JavaConfig) {
+        this.initJs5RemoteConnection(config);
+
+        const status = await this.stream.read();
+        if (status !== 0) {
+            throw new Error(`Bad JS5 response: ${status}`);
+        }
+
+        this.connected(config);
+    }
+
+    initJs5RemoteConnection(config: JavaConfig) {
+        const req = Packet.alloc(44);
+        req.p1(15); // INIT_JS5REMOTE_CONNECTION
+        req.p1(0);
+        const start = req.pos;
+
+        req.p4(config.serverVersion); // major rev
+        req.p4(1); // minor rev
+        req.pjstr(config.token); // token
+        req.p1(0); // lang id
+
+        req.psize1(req.pos - start);
+        this.stream.write(req.data);
+    }
+
+    connected(config: JavaConfig) {
+        const req = Packet.alloc(10);
+        req.p1(6); // opcode
+
+        req.p3(5); // protocol version?
+        req.p2(0);
+        req.p2(config.serverVersion);
+        req.p2(0);
+
+        this.stream.write(req.data);
+    }
+
+    request(config: JavaConfig, prefetch: boolean, archive: number, group: number) {
+        const req = Packet.alloc(10);
+        req.p1(prefetch ? 32 : 33); // opcode
+
+        req.p1(archive);
+        req.p4(group);
+        req.p2(config.serverVersion);
+        req.p2(0);
+
+        this.stream.write(req.data);
+    }
+}
+
 if (!fs.existsSync('data/client')) {
     fs.mkdirSync('data/client', { recursive: true });
 }
@@ -24,20 +195,9 @@ if (!config) {
     process.exit(1);
 }
 
-// todo: port is also a config param
-const lobby = net.createConnection({ host: 'content.runescape.com', port: 443 }, () => {
-    const req = Packet.alloc(1000);
-    req.p1(15); // INIT_JS5REMOTE_CONNECTION
-    req.p1(0); // size
-    const start = req.pos;
-    req.p4(config.serverVersion); // major rev
-    req.p4(1); // minor rev
-    req.pjstr(config.token); // token
-    req.p1(0); // lang id
-    req.psize1(req.pos - start);
-    lobby.write(req.data);
+const js5 = await Js5TcpClient.connectToRs3();
+await js5.init(config);
+js5.request(config, true, 255, 255);
 
-    lobby.on('data', (data) => {
-        console.log(data);
-    });
-});
+await sleep(5000);
+js5.stream.close();
