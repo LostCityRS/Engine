@@ -1,6 +1,11 @@
 {
   "name": "engine",
   "type": "module",
+  "imports": {
+    "#3rdparty/*": "./src/3rdparty/*",
+    "#jagex/*": "./src/jagex/*",
+    "#/*": "./src/*"
+  },
   "devDependencies": {
     "@eslint/js": "^9.14.0",
     "@types/better-sqlite3": "^7.6.11",

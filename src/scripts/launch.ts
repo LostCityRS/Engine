@@ -1,6 +1,6 @@
 import fs from 'fs';
 
-import { NxtClientBinaryType, JavaConfig } from '../jagex/JavaConfig.ts';
+import { NxtClientBinaryType, JavaConfig } from '#jagex/JavaConfig.ts';
 
 if (!fs.existsSync('data/client')) {
     fs.mkdirSync('data/client', { recursive: true });

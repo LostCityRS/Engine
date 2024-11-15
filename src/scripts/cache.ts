@@ -1,8 +1,8 @@
 import fs from 'fs';
 import net from 'net';
 
-import { JavaConfig, NxtClientBinaryType } from '../jagex/JavaConfig.ts';
-import Packet from '../jagex/Packet.ts';
+import { JavaConfig, NxtClientBinaryType } from '#jagex/JavaConfig.ts';
+import Packet from '#jagex/Packet.ts';
 
 function sleep(ms: number) {
     return new Promise((res) => {

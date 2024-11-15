@@ -3,8 +3,8 @@ import fs from 'fs';
 
 import axios from 'axios';
 
-import { downloadInMemory, downloadToFile } from '../util/HttpUtils.ts';
-import { decompressLzma } from '../3rdparty/lzma/index.ts';
+import { downloadInMemory, downloadToFile } from '#/util/HttpUtils.ts';
+import { decompressLzma } from '#3rdparty/lzma/index.ts';
 
 export enum NxtClientBinaryType {
     WinXP, // removed
