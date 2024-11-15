@@ -12,7 +12,7 @@
     "paths": {
         "#3rdparty/*": ["src/3rdparty/*"],
         "#jagex/*": ["src/jagex/*"],
-        "#/*": ["src/*"]
+        "#lostcity/*": ["src/lostcity/*"]
     },
 
     // Bundler mode

@@ -4,7 +4,7 @@
   "imports": {
     "#3rdparty/*": "./src/3rdparty/*",
     "#jagex/*": "./src/jagex/*",
-    "#/*": "./src/*"
+    "#lostcity/*": "./src/lostcity/*"
   },
   "devDependencies": {
     "@eslint/js": "^9.14.0",
@@ -26,9 +26,6 @@
     "lzma-native": "^8.0.6"
   },
   "scripts": {
-    "launch": "npm run ts-loader src/scripts/launch.ts",
-    "start": "npm run ts-loader src/app.ts",
-    "bun:start": "bun run src/app.ts",
     "ts-loader": "node --experimental-strip-types --experimental-transform-types"
   }
 }
