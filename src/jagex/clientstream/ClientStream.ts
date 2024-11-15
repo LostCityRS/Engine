@@ -2,7 +2,7 @@ import net from 'net';
 
 import { sleep } from '#lostcity/util/Time.js';
 
-import Packet from '#jagex/io/Packet.js';
+import Packet from '#jagex/bytepacking/Packet.js';
 
 export default class ClientStream {
     static async connect(host: string, port: number): Promise<ClientStream> {

@@ -2,15 +2,15 @@ import fs from 'fs';
 
 import { sleep } from '#lostcity/util/Time.js';
 
-import { JavaConfig, NxtClientBinaryType } from '#jagex/client/JavaConfig.js';
-import Js5TcpClient from '#jagex/js5/Js5TcpClient.js';
+import { JavConfig, NxtClientBinaryType } from '#jagex/javapal/JavConfig.js';
+import Js5TcpClient from '#jagex/js5/network/Js5TcpClient.js';
 
 if (!fs.existsSync('data/client')) {
     fs.mkdirSync('data/client', { recursive: true });
 }
 
 if (!fs.existsSync('data/client/jav_config.ws')) {
-    const config = await JavaConfig.decodeFromRs3(NxtClientBinaryType.MacOS);
+    const config = await JavConfig.decodeFromRs3(NxtClientBinaryType.MacOS);
     if (!config) {
         console.error('Failed to download template jav_config.ws');
         process.exit(1);
@@ -19,7 +19,7 @@ if (!fs.existsSync('data/client/jav_config.ws')) {
     fs.writeFileSync('data/client/jav_config.ws', config.encode(true));
 }
 
-const config = JavaConfig.decode(fs.readFileSync('data/client/jav_config.ws', 'ascii'));
+const config = JavConfig.decode(fs.readFileSync('data/client/jav_config.ws', 'ascii'));
 if (!config) {
     console.error('Failed to decode jav_config.ws');
     process.exit(1);

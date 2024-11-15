@@ -20,7 +20,7 @@ interface Database {
     cache_index: CacheIndex;
 }
 
-export default class Js5LocalCache {
+export default class Js5DiskCache {
     #db: Kysely<Database>;
 
     constructor(path: string) {

@@ -1,10 +1,9 @@
-import ClientStream from '#lostcity/io/ClientStream.js';
-
-import { JavaConfig } from '#jagex/client/JavaConfig.js';
-import Packet from '#jagex/io/Packet.js';
+import Packet from '#jagex/bytepacking/Packet.js';
+import ClientStream from '#jagex/clientstream/ClientStream.js';
+import { JavConfig } from '#jagex/javapal/JavConfig.js';
 
 export default class Js5TcpClient {
-    static async connectToRs3(config: JavaConfig) {
+    static async connectToRs3(config: JavConfig) {
         const client = new Js5TcpClient(await ClientStream.connect('content.runescape.com', 443));
         await client.init(config);
         return client;
@@ -19,7 +18,7 @@ export default class Js5TcpClient {
         this.stream = stream;
     }
 
-    async init(config: JavaConfig) {
+    async init(config: JavConfig) {
         this.initJs5RemoteConnection(config);
 
         const status = await this.stream.read();
@@ -31,7 +30,7 @@ export default class Js5TcpClient {
     }
 
     // todo: should be abstracted one level higher (LoginProt) - not a "part of" Js5 itself, but a requirement to set up the connection
-    initJs5RemoteConnection(config: JavaConfig) {
+    initJs5RemoteConnection(config: JavConfig) {
         const req = Packet.alloc(44);
         req.p1(15); // INIT_JS5REMOTE_CONNECTION
         req.p1(0);
@@ -46,7 +45,7 @@ export default class Js5TcpClient {
         this.stream.write(req.data);
     }
 
-    connected(config: JavaConfig) {
+    connected(config: JavConfig) {
         this.out.pos = 0;
         this.out.p1(6); // opcode
 
@@ -58,7 +57,7 @@ export default class Js5TcpClient {
         this.stream.write(this.out.data);
     }
 
-    request(config: JavaConfig, prefetch: boolean, archive: number, group: number) {
+    request(config: JavConfig, prefetch: boolean, archive: number, group: number) {
         this.out = Packet.alloc(10);
         this.out.p1(prefetch ? 32 : 33); // opcode
 

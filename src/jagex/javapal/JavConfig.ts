@@ -20,9 +20,10 @@ export enum NxtClientBinaryType {
     Unknown, // (empty) guessing: second variant of android
 }
 
-export class JavaConfig {
+// more than just a reader!
+export class JavConfig {
     static decode(input: string) {
-        const config = new JavaConfig();
+        const config = new JavConfig();
 
         const downloads: Map<string, string> = new Map();
         let binaryCount = 0;
@@ -125,7 +126,7 @@ export class JavaConfig {
     static async decodeFromUrl(url: string) {
         try {
             const req = await axios.get(url, { responseType: 'text', responseEncoding: 'utf8' });
-            return JavaConfig.decode(req.data as string);
+            return JavConfig.decode(req.data as string);
         } catch (e) {
             console.error(e);
             return null;
@@ -133,7 +134,7 @@ export class JavaConfig {
     }
 
     static async decodeFromRs3(type: NxtClientBinaryType) {
-        const config = await JavaConfig.decodeFromUrl(`https://www.runescape.com/jav_config.ws?binaryType=${type}`);
+        const config = await JavConfig.decodeFromUrl(`https://www.runescape.com/jav_config.ws?binaryType=${type}`);
 
         if (config) {
             config.binaryType = type;
@@ -143,7 +144,7 @@ export class JavaConfig {
     }
 
     static async decodeFromOsrs() {
-        return JavaConfig.decodeFromUrl('https://oldschool.runescape.com/jav_config.ws');
+        return JavConfig.decodeFromUrl('https://oldschool.runescape.com/jav_config.ws');
     }
 
     get token(): string {
