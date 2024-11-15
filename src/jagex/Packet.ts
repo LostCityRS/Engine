@@ -3,27 +3,27 @@ export default class Packet {
         return new Packet(new Uint8Array(size));
     }
 
-    #data: Uint8Array;
+    raw: Uint8Array;
     pos: number;
 
     #view: DataView;
 
     constructor(data: Uint8Array, pos: number = 0) {
-        this.#data = new Uint8Array(data);
+        this.raw = new Uint8Array(data);
         this.pos = pos;
-        this.#view = new DataView(this.#data.buffer);
+        this.#view = new DataView(this.raw.buffer);
     }
 
     get available(): number {
-        return this.#data.length - this.pos;
+        return this.raw.length - this.pos;
     }
 
     get length(): number {
-        return this.#data.length;
+        return this.raw.length;
     }
 
     get data(): Uint8Array {
-        return this.#data.subarray(0, this.pos);
+        return this.raw.subarray(0, this.pos);
     }
 
     g1(): number {
@@ -156,7 +156,7 @@ export default class Packet {
     }
 
     pdata(src: Uint8Array, off: number, len: number): void {
-        this.#data.set(src.subarray(off, off + len), this.pos);
+        this.raw.set(src.subarray(off, off + len), this.pos);
         this.pos += len;
     }
 

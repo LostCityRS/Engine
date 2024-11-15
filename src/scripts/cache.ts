@@ -31,7 +31,7 @@ class ClientStream {
         this.socket.setTimeout(30000);
 
         this.socket.on('data', (data) => {
-            console.log('read', data);
+            // console.log('read', data);
             this.buf = Buffer.concat([this.buf, data]);
         });
 
@@ -74,7 +74,7 @@ class ClientStream {
         return value;
     }
 
-    async readBytes(dest: Uint8Array | Buffer, len: number = dest.length, off: number = 0): Promise<boolean> {
+    async readBytes(dest: Uint8Array | Buffer | Packet, len: number = dest.length, off: number = 0): Promise<boolean> {
         if (this.closed && this.available < len) {
             return false;
         }
@@ -83,9 +83,13 @@ class ClientStream {
             await sleep(1);
         }
 
-        dest.set(this.buf.subarray(this.bufPos, this.bufPos + len), off);
-        this.bufPos += len;
+        if (dest instanceof Packet) {
+            dest.raw.set(this.buf.subarray(this.bufPos, this.bufPos + len), off);
+        } else {
+            dest.set(this.buf.subarray(this.bufPos, this.bufPos + len), off);
+        }
 
+        this.bufPos += len;
         if (this.bufPos >= 5000) {
             // shrink if at least 5kb has been read
             this.buf = this.buf.subarray(this.bufPos);
@@ -104,7 +108,7 @@ class ClientStream {
             return;
         }
 
-        console.log('write', src);
+        // console.log('write', src);
         if (len === src.length && off === 0) {
             this.socket.write(src);
         } else {
@@ -114,11 +118,16 @@ class ClientStream {
 }
 
 class Js5TcpClient {
-    static async connectToRs3() {
-        return new Js5TcpClient(await ClientStream.connect('content.runescape.com', 443));
+    static async connectToRs3(config: JavaConfig) {
+        const client = new Js5TcpClient(await ClientStream.connect('content.runescape.com', 443));
+        await client.init(config);
+        return client;
     }
 
     stream: ClientStream;
+    out: Packet = Packet.alloc(10);
+    server: Packet = Packet.alloc(5);
+    client: Packet = Packet.alloc(5);
 
     constructor(stream: ClientStream) {
         this.stream = stream;
@@ -135,6 +144,7 @@ class Js5TcpClient {
         this.connected(config);
     }
 
+    // todo: should be abstracted one level higher (LoginProt) - not a "part of" Js5 itself, but a requirement to set up the connection
     initJs5RemoteConnection(config: JavaConfig) {
         const req = Packet.alloc(44);
         req.p1(15); // INIT_JS5REMOTE_CONNECTION
@@ -151,27 +161,27 @@ class Js5TcpClient {
     }
 
     connected(config: JavaConfig) {
-        const req = Packet.alloc(10);
-        req.p1(6); // opcode
+        this.out.pos = 0;
+        this.out.p1(6); // opcode
 
-        req.p3(5); // protocol version?
-        req.p2(0);
-        req.p2(config.serverVersion);
-        req.p2(0);
+        this.out.p3(5); // protocol version?
+        this.out.p2(0);
+        this.out.p2(config.serverVersion);
+        this.out.p2(0);
 
-        this.stream.write(req.data);
+        this.stream.write(this.out.data);
     }
 
     request(config: JavaConfig, prefetch: boolean, archive: number, group: number) {
-        const req = Packet.alloc(10);
-        req.p1(prefetch ? 32 : 33); // opcode
+        this.out = Packet.alloc(10);
+        this.out.p1(prefetch ? 32 : 33); // opcode
 
-        req.p1(archive);
-        req.p4(group);
-        req.p2(config.serverVersion);
-        req.p2(0);
+        this.out.p1(archive);
+        this.out.p4(group);
+        this.out.p2(config.serverVersion);
+        this.out.p2(0);
 
-        this.stream.write(req.data);
+        this.stream.write(this.out.data);
     }
 }
 
@@ -195,9 +205,28 @@ if (!config) {
     process.exit(1);
 }
 
-const js5 = await Js5TcpClient.connectToRs3();
-await js5.init(config);
+const js5 = await Js5TcpClient.connectToRs3(config);
 js5.request(config, true, 255, 255);
+
+js5.client.pos = 0;
+await js5.stream.readBytes(js5.client, 5, 0);
+const archive = js5.client.g1();
+const groupPrefetch = js5.client.g4();
+const prefetch: boolean = (groupPrefetch & 0x80000000) != 0;
+const group: number = (groupPrefetch & ~0x80000000);
+console.log(`received data for archive:${archive} prefetch:${prefetch} group:${group}`);
+
+js5.server.pos = 0;
+await js5.stream.readBytes(js5.server, 5, 0);
+const compression = js5.server.g1();
+const length = js5.server.g4();
+console.log(`compression method:${compression} length:${length}`);
+
+const totalLength = compression === 0 ? length + 5 : length;
+const file = Buffer.alloc(totalLength);
+file.set(js5.server.raw);
+await js5.stream.readBytes(file, length, 5);
+console.log(file);
 
 await sleep(5000);
 js5.stream.close();
