@@ -26,6 +26,7 @@ export default class Js5OpenRs2Cache {
         fs.mkdirSync('data/cache', { recursive: true });
 
         if (!fs.existsSync('data/cache/flat-file.tar.gz')) {
+            console.log('Downloading, please wait...');
             try {
                 const writer = fs.createWriteStream('data/cache/flat-file.tar.gz');
                 const req = await axios.get(`https://archive.openrs2.org/caches/runescape/${this.id}/flat-file.tar.gz`, { responseType: 'stream' });
@@ -45,6 +46,7 @@ export default class Js5OpenRs2Cache {
         }
 
         if (!fs.existsSync('data/cache/255/255.dat')) {
+            console.log('Extracting, please wait...');
             await this.getGroup(255, 255); // not included in the flat-file archive!
 
             await pipeline(
