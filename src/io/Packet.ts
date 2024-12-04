@@ -145,8 +145,8 @@ export default class Packet {
     }
 
     p2_alt3(value: number): void {
-        this.#view.setUint8(this.pos++, (value + 128) & 0xFF);
-        this.#view.setUint8(this.pos++, (value >> 8) & 0xFF);
+        this.#view.setUint8(this.pos++, value + 128);
+        this.#view.setUint8(this.pos++, value >> 8);
     }
 
     p3(value: number): void {

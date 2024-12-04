@@ -9,7 +9,7 @@ type OpenRs2Xtea = {
     group: number;
     name_hash: number;
     name: string;
-    mapsquare: string;
+    mapsquare: number;
     key: number[];
 };
 
@@ -69,6 +69,7 @@ export default class Js5OpenRs2Cache {
         }
 
         try {
+            console.log('Downloading map keys');
             const req = await axios.get(`https://archive.openrs2.org/caches/runescape/${this.id}/keys.json`, { responseType: 'text' });
             fs.writeFileSync('data/cache/keys.json', req.data);
             return JSON.parse(req.data);
