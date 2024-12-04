@@ -17,12 +17,13 @@ export default class Js5OpenRs2Cache {
     static OSRS_1 = new Js5OpenRs2Cache(241);
 
     id: number;
+    keys: OpenRs2Xtea[] = [];
 
     constructor(id: number) {
         this.id = id;
     }
 
-    async predownload(): Promise<boolean> {
+    async predownload() {
         fs.mkdirSync('data/cache', { recursive: true });
 
         if (!fs.existsSync('data/cache/flat-file.tar.gz')) {
@@ -62,27 +63,7 @@ export default class Js5OpenRs2Cache {
         return true;
     }
 
-    async getKeys(): Promise<OpenRs2Xtea[]> {
-        fs.mkdirSync('data/cache', { recursive: true });
-        if (fs.existsSync('data/cache/keys.json')) {
-            return JSON.parse(fs.readFileSync('data/cache/keys.json', 'ascii'));
-        }
-
-        try {
-            console.log('Downloading map keys');
-            const req = await axios.get(`https://archive.openrs2.org/caches/runescape/${this.id}/keys.json`, { responseType: 'text' });
-            fs.writeFileSync('data/cache/keys.json', req.data);
-            return JSON.parse(req.data);
-        } catch (err) {
-            if (err instanceof Error) {
-                console.log(err.message);
-            }
-        }
-
-        return [];
-    }
-
-    async getGroup(archive: number, group: number): Promise<Uint8Array | null> {
+    async getGroup(archive: number, group: number) {
         fs.mkdirSync(`data/cache/${archive}`, { recursive: true });
         if (fs.existsSync(`data/cache/${archive}/${group}.dat`)) {
             return Uint8Array.from(fs.readFileSync(`data/cache/${archive}/${group}.dat`));
@@ -99,5 +80,35 @@ export default class Js5OpenRs2Cache {
         }
 
         return null;
+    }
+
+    async loadKeys() {
+        fs.mkdirSync('data/cache', { recursive: true });
+        if (fs.existsSync('data/cache/keys.json')) {
+            this.keys = JSON.parse(fs.readFileSync('data/cache/keys.json', 'ascii'));
+            return;
+        }
+
+        try {
+            console.log('Downloading map keys');
+            const req = await axios.get(`https://archive.openrs2.org/caches/runescape/${this.id}/keys.json`, { responseType: 'text' });
+            fs.writeFileSync('data/cache/keys.json', req.data);
+            this.keys = JSON.parse(req.data);
+        } catch (err) {
+            if (err instanceof Error) {
+                console.log(err.message);
+            }
+        }
+    }
+
+    getKey(x: number, z: number) {
+        const id = x << 8 | z;
+
+        const entry = this.keys.find(k => k.mapsquare === id);
+        if (!entry) {
+            return [0, 0, 0, 0];
+        } else {
+            return entry.key;
+        }
     }
 }

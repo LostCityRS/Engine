@@ -3,17 +3,39 @@ import net from 'net';
 import Js5OpenRs2Cache from '#/js5/Js5OpenRs2Cache.ts';
 import Packet from '#/io/Packet.ts';
 
+import type ServerMessage from '#/network/server/ServerMessage.ts';
+import GameServerRepository from '#/network/os1/server/game/prot/GameServerRepository.ts';
+import RebuildNormal from '#/network/server/game/model/RebuildNormal.ts';
+import IfOpenTop from '#/network/server/game/model/IfOpenTop.ts';
+
 const cache = Js5OpenRs2Cache.OSRS_1;
-const keys = await cache.getKeys();
 
-function getKey(x: number, z: number) {
-    const id = x << 8 | z;
+// todo: abstract and move this code
+const repo = new GameServerRepository();
+function encodeServerMessage(buf: Packet, message: ServerMessage) {
+    const encoder = repo.getEncoder(message);
+    if (typeof encoder === 'undefined') {
+        throw new Error(`Missing ${message.constructor.name} message encoder`);
+    }
 
-    const entry = keys.find(k => k.mapsquare === id);
-    if (!entry) {
-        return [0, 0, 0, 0];
-    } else {
-        return entry.key;
+    if (buf.available < encoder.test(message)) {
+        throw new Error(`Not enough bytes to write ${message.constructor.name} message`);
+    }
+
+    buf.p1(encoder.opcode);
+    if (encoder.size === -1) {
+        buf.p1(0);
+    } else if (encoder.size === -2) {
+        buf.p2(0);
+    }
+    const start = buf.pos;
+
+    encoder.write(buf, message);
+
+    if (encoder.size === -1) {
+        buf.psize1(buf.pos - start);
+    } else if (encoder.size === -2) {
+        buf.psize2(buf.pos - start);
     }
 }
 
@@ -121,60 +143,16 @@ const world = net.createServer((socket) => {
                         reply.p1(0);
                         reply.p2(0);
                         reply.p1(0);
-
-                        const rebuild = Packet.alloc(5000);
-                        rebuild.p1(21);
-                        rebuild.p2(0);
-                        let start = rebuild.pos;
-
-                        const x = 3200;
-                        const z = 3200;
-                        const zx = x >> 3;
-                        const zz = z >> 3;
-
-                        // local coord
-                        rebuild.p2(z - ((zz - 6) << 3));
-                        rebuild.p2_alt1(x - ((zx - 6) << 3));
-
-                        for (let mx = (zx - 6) >> 3; mx <= (zx + 6) >> 3; mx++) {
-                            for (let mz = (zz - 6) >> 3; mz <= (zz + 6) >> 3; mz++) {
-                                const key = getKey(mx, mz);
-                                for (let i = 0; i < 4; i++) {
-                                    // xtea keys
-                                    rebuild.p4_alt2(key[i]);
-                                }
-                            }
-                        }
-
-                        rebuild.p1_alt2(0);
-
-                        // zone coord
-                        rebuild.p2(x >> 3);
-                        rebuild.p2_alt3(z >> 3);
-
-                        rebuild.psize2(rebuild.pos - start);
-
-                        const toplevel = Packet.alloc(3);
-                        toplevel.p1(147);
-                        toplevel.p2_alt1(548);
-
-                        // const playerinfo = Packet.alloc(5000);
-                        // playerinfo.p1(113);
-                        // playerinfo.p2(0);
-                        // start = playerinfo.pos;
-
-                        // playerinfo.bits();
-                        // playerinfo.pBit(1, 0);
-                        // playerinfo.pBit(8, 0);
-                        // playerinfo.pBit(11, 2047);
-                        // playerinfo.bytes();
-
-                        // playerinfo.psize2(playerinfo.pos - start);
-
                         reply.send(socket);
-                        rebuild.send(socket);
-                        toplevel.send(socket);
-                        // playerinfo.send(socket);
+
+                        const temp = Packet.alloc(5000);
+                        encodeServerMessage(temp, new RebuildNormal(3222, 3222));
+                        temp.send(socket);
+
+                        temp.pos = 0;
+                        encodeServerMessage(temp, new IfOpenTop(548));
+                        temp.send(socket);
+
                         state = 3;
                     }
                 } else if (state === 3) {
@@ -195,6 +173,8 @@ const world = net.createServer((socket) => {
 });
 
 await cache.predownload();
+await cache.loadKeys();
+
 world.listen({ host: '0.0.0.0', port: 40001 }, () => {
     console.log('World listening on port 40001');
 });
