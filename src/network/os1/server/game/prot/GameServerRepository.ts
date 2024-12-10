@@ -4,8 +4,8 @@ import IfOpenTopEncoder from '#/network/os1/server/game/codec/IfOpenTopEncoder.t
 import IfOpenTop from '#/network/server/game/model/IfOpenTop.ts';
 import Logout from '#/network/server/game/model/Logout.ts';
 import LogoutEncoder from '../codec/LogoutEncoder.ts';
-import PlaySong from '#/network/server/game/model/PlaySong.ts';
-import PlaySongEncoder from '../codec/PlaySongEncoder.ts';
+import MidiSong from '#/network/server/game/model/MidiSong.ts';
+import MidiSongEncoder from '../codec/MidiSongEncoder.ts';
 import RebuildNormalEncoder from '#/network/os1/server/game/codec/RebuildNormalEncoder.ts';
 import RebuildNormal from '#/network/server/game/model/RebuildNormal.ts';
 
@@ -15,7 +15,7 @@ export default class GameServerRepository extends ServerRepository {
 
         this.bind(IfOpenTop, new IfOpenTopEncoder());
         this.bind(Logout, new LogoutEncoder());
-        this.bind(PlaySong, new PlaySongEncoder());
+        this.bind(MidiSong, new MidiSongEncoder());
         this.bind(RebuildNormal, new RebuildNormalEncoder());
     }
 }
