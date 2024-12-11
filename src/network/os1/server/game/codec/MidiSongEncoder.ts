@@ -4,7 +4,7 @@ import MessageEncoder from '#/network/server/codec/MessageEncoder.ts';
 
 import type MidiSong from '#/network/server/game/model/MidiSong.ts';
 
-export default class PlaySongEncoder extends MessageEncoder {
+export default class MidiSongEncoder extends MessageEncoder {
     opcode = 211;
     size = 2;
 
