@@ -1,0 +1,233 @@
+<html xmlns:IE>
+
+<head>
+    <meta http-equiv='Expires' content='0'>
+    <meta http-equiv='Pragma' content='no-cache'>
+    <meta http-equiv='Cache-Control' content='no-cache'>
+    <meta name="description"
+        content="Play RuneScape, the world's most popular free MMORPG. Start your adventure, complete quests and win enormous treasures in a 3D world of magic and monsters.">
+    <link rel="icon" type="image/vnd.microsoft.icon" href="/favicon.ico" />
+    <link rel="SHORTCUT ICON" href="/favicon.ico" />
+    <title>Old School RuneScape Game</title>
+    <style>
+        body,
+        td,
+        p {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 11px;
+        }
+
+        body {
+            margin: 0;
+            overflow: auto;
+            background: black;
+            color: white;
+        }
+
+        input {
+            margin: 0;
+            font-size: 11px;
+            height: 20px;
+            vertical-align: middle;
+        }
+
+        input.s {
+            background-color: #D2BB86;
+            border: solid 2px #382418;
+            color: black;
+        }
+
+        input.t {
+            background: url('/gamewin/sb.gif');
+            border: 0;
+            color: white;
+            width: 49px;
+        }
+
+        img {
+            vertical-align: middle;
+            border: 0;
+        }
+
+        td {
+            vertical-align: middle;
+        }
+
+        a {
+            color: white;
+        }
+    </style>
+    <IE:clientCaps ID="oClientCaps"></IE:clientCaps>
+    <script src='/js/jquery/jquery_1_7.js'></script>
+</head>
+
+<body>
+    <center>
+        <table cellpadding=0 cellspacing=1>
+            <tr>
+                <td align=center>
+                    <table border=0 background="/gamewin/navbar.gif" cellspacing=0 cellpadding=0 width=765 height=25>
+                        <tr>
+                            <td width=5></td>
+                            <td>
+                                <img src="/jagex_logo_79x21.png">
+                            </td>
+                            <td></td>
+                            <td>
+                                <a href="/" ID="menulink">
+                                    <img src="/gamewin/navbar_mainmenu.gif">
+                                    Main Menu
+                                </a>
+                            </td>
+                            <td></td>
+                            <td>
+                                <a href="/slu">
+                                    <img src="/gamewin/navbar_mainmenu.gif">
+                                    World Select
+                                </a>
+                            </td>
+                            <td></td>
+                            <td>
+                                <a href="/gamewin/runescape-map-24-july-07.jpg" target="WorldMap"
+                                    onclick="window.open('/gamewin/runescape-map-24-july-07.jpg','WorldMap','width=635,height=550'); return false;">
+                                    <img src="/gamewin/navbar_worldmap.gif">
+                                    World Map
+                                </a>
+                            </td>
+                            <td></td>
+                            <td>
+                                <a href="#"
+                                    target="RulesSecurity">
+                                    <img src="/gamewin/navbar_rules.gif">
+                                    Rules
+                                </a>
+                            </td>
+                            <td></td>
+                            <td align=right width=210>
+                                <a href="#"
+                                    target="Manual"><img src="/gamewin/navbar_manual.gif"
+                                        style="vertical-align: top;"></a>
+                                <form action="https://oldschool.runescape.wiki" method="get"
+                                    target="_blank" style="display:inline">
+                                    <input id="Search" name="search" class="s" type="text" title="Search the RuneScape Wiki"
+                                        name="text" size="15">
+                                    <input type="submit" class="t" title="Find" name="search" value="Search">
+                                </form>
+                            </td>
+                            <td width=5></td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+            <tr>
+                <td align=center>
+                    <applet name="oldscape" width="765px" height="503px" archive="osclient.jar" code="jagex3/client/Client.class" mayscript>
+                        <param name="1" value="true"> <!-- js -->
+                        <param name="2" value="1"> <!-- worldid -->
+                        <param name="4" value="0"> <!-- lang -->
+                        <param name="5" value="2"> <!-- modewhat -->
+                        <param name="6" value="true"> <!-- members -->
+                        <param name="7" value="2"> <!-- modewhere -->
+                        <param name="8" value="5"> <!-- modegame -->
+                        <param name="9" value="http://localhost/slr.ws?order=LPWM"> <!-- worldlist -->
+                    </applet>
+
+                    <!--[if IE]>
+                        <style type="text/css">
+                            @media all {
+                                IE\:clientCaps {behavior:url(#default#clientcaps)}
+                            }
+                        </style>
+                        <IE:clientCaps ID="oClientCaps"></IE:clientCaps>
+                    <![endif]-->
+                    <script type="text/javascript">haveie6 = false;</script>
+                    <!--[if lt IE 7]><script type="text/javascript">haveie6=true;</script><![endif]-->
+                    <!--script type="text/javascript">
+                        document.domain = 'localhost';
+
+                        function getCookie(throw_name) {
+                            var cookies = document.cookie.split("; ");
+                            var regex = "";
+                            regex = new RegExp("^" + throw_name + "=(.*)");
+                            for (var i in cookies) {
+                                if (t = regex.exec(cookies[i])) {
+                                    return t[1];
+                                }
+                            }
+                            return null;
+                        }
+
+                        var openjdk_installed = false;
+                        if (getCookie("openjdkInstalled")) {
+                            openjdk_installed = true;
+                        }
+                    </script>
+                    <script type="text/javascript" src="/js/deployJava-1.js"></script>
+                    <script id="deployJava" type="text/javascript">
+                        var javaVersionOK = true;
+                        try {
+                            if ($.browser.mozilla) {
+                                javaVersionOK = deployJava.versionCheck("1.6.0_31+");
+                            } else {
+                                javaVersionOK = deployJava.versionCheck("1.6.0_10+");
+                            }
+                        } catch (x) { }
+
+                        if (javaVersionOK) {
+                            document.write('<app'); document.write('let ');
+                            document.write('name=oldscape ');
+                            document.write('id=game ');
+                            document.write('width="765px" ');
+                            document.write('height="503px" ');
+                            document.write('alt="For assistance please visit the FAQ page" ');
+                            document.write('archive=osclient.rel.jar ');
+                            document.write('code=client.class ');
+                            document.write('mayscript>');
+                            document.write('<param name="boxbgcolor" value="black">');
+                            document.write('<param name="centerimage" value="true">');
+                            document.write('<param name="image" value="/oldschool_ani.gif">');
+                            document.write('<param name="separate_jvm" value="true">');
+                            document.write('<param name="boxborder" value="false">');
+                            document.write('<param name="java_arguments" value="-Xmx256m -Xss2m -Dsun.java2d.noddraw=true -XX:CompileThreshold=1500 -Xincgc -XX:+UseConcMarkSweepGC -XX:+UseParNewGC">');
+                            document.write('<param name="1" value="0">');
+                            document.write('<param name="4" value="true">');
+                            document.write('<param name="2" value="0">');
+                            document.write('<param name="6" value="0">');
+                            document.write('<param name="7" value="/slr.ws?order=LPWM">');
+                            document.write('<param name="9" value="true">');
+                            document.write('<param name="3" value="false">');
+                            document.write('<param name="8" value="5">');
+                            document.write('<param name="5" value="1">'); // world ID
+
+                            if (haveie6) {
+                                document.write('<param name="haveie6" value="true">');
+                            }
+
+                            document.write('<div class="nojava"><h1>Please Update Java</h1><p>It appears that you do not have Java installed, or your version of Java is out of date. To play this game please <a target="_blank" href="http://www.java.com/en/download/index.jsp">click here</a> to download the latest version of Java.</p></div>');
+                            document.write('</applet>');
+                        } else {
+                            document.write('<div class="nojava"><h1>Please Update Java</h1><p>It appears that you do not have Java installed, or your version of Java is out of date. To play this game please <a target="_blank" href="http://www.java.com/en/download/index.jsp">click here</a> to download the latest version of Java.</p></div>');
+                        }
+                    </script-->
+                </td>
+            </tr>
+        </table>
+    </center>
+    <script language="javascript">
+        $(function () {
+            document.domain = 'localhost';
+
+            $('a').click(function () {
+                var $this = $(this);
+                var target = $this.attr("target");
+                if ((target == undefined || target == "" || target == "_parent" || target == "_top")) {
+                    return confirm("'Please make sure you have logged out of the game before navigating away.'");
+                }
+            });
+
+            window.scroll(0, 0);
+        });
+    </script>
+</body>
+
+</html>
