@@ -9,6 +9,25 @@ import ejs from 'ejs';
 import World from '#/engine/World.ts';
 import TcpServer from '#/server/TcpServer.ts';
 
+import Packet from '#/io/Packet.ts';
+
+const slr = Packet.alloc(5000);
+slr.p4(0);
+const start = slr.pos;
+
+slr.p2(1); // count
+
+const worldId = 1;
+const members = true;
+const country = 0;
+
+slr.p2((worldId & 0x7FFF) | (members ? 0x8000 : 0));
+slr.pjstr('127.0.0.1');
+slr.p1(country);
+slr.p2(0); // player count
+
+slr.psize4(slr.pos - start);
+
 await World.load();
 
 const server = new TcpServer();
@@ -42,6 +61,11 @@ fastify.register(fastifyView, {
 
 fastify.get('/', (req, reply) => {
     reply.view('applet.ejs');
+});
+
+fastify.get('/slr.ws', (req, reply) => {
+    reply.header('content-type', 'application/octet-stream');
+    reply.send(slr.data.subarray(0, slr.pos));
 });
 
 fastify.get('/error_game_alreadyloaded.ws', (req, reply) => {
@@ -90,5 +114,5 @@ fastify.get('/clienterror.ws', (req, reply) => {
 
 await fastify.listen({
     host: '0.0.0.0',
-    port: 80
+    port: 7001
 });
