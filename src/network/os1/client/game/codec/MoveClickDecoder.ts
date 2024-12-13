@@ -6,11 +6,18 @@ import MessageDecoder from '#/network/client/codec/MessageDecoder.ts';
 import MoveClick from '#/network/client/game/model/MoveClick.ts';
 
 export default class MoveClickDecoder extends MessageDecoder {
-    opcode = 176;
+    opcode = -1;
     size = -1;
 
+    constructor(opcode: number) {
+        super();
+
+        this.opcode = opcode;
+    }
+
     read(buf: Packet, length: number): ClientMessage {
-        const waypoints = (length - 3) / 2;
+        const offset = this.opcode === 60 ? 14 : 0; // extra input data when clicking minimap
+        const waypoints = (length - 3 - offset) / 2;
 
         const path = [];
         for (let i = 1; i < waypoints; i++) {

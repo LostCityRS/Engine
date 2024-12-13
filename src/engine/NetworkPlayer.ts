@@ -27,19 +27,13 @@ export default class NetworkPlayer extends Player {
         while (buf.available > 0) {
             const opcode = buf.g1();
 
-            const message = NetworkPlayer.clientRepo.getMessage(opcode);
-            if (typeof message === 'undefined') {
-                console.error(`Unknown game message: ${opcode}`);
-                break;
-            }
-
-            const decoder = NetworkPlayer.clientRepo.getDecoder(message);
+            const decoder = NetworkPlayer.clientRepo.getDecoder(opcode);
             if (typeof decoder === 'undefined') {
                 console.error(`Unregistered game message decoder: ${opcode}`);
                 break;
             }
 
-            const handler = NetworkPlayer.clientRepo.getHandler(message);
+            const handler = NetworkPlayer.clientRepo.getHandler(opcode);
             if (typeof handler === 'undefined') {
                 console.error(`Unregistered game message handler: ${opcode}`);
                 break;
@@ -58,7 +52,7 @@ export default class NetworkPlayer extends Player {
             buf.pos = start + length;
 
             if (!handler.handle(read, this)) {
-                console.error(`Packet handler: ${message.constructor.name} returned false`);
+                console.error(`Packet handler: ${read.constructor.name} returned false`);
             }
         }
     }
