@@ -4,7 +4,6 @@ import Packet from '#/io/Packet.ts';
 import Js5OpenRs2Cache from '#/js5/Js5OpenRs2Cache.ts';
 import IfOpenTop from '#/network/server/game/model/IfOpenTop.ts';
 import RebuildNormal from '#/network/server/game/model/RebuildNormal.ts';
-import type ClientSocket from '#/server/ClientSocket.ts';
 
 class World {
     cache = Js5OpenRs2Cache.OSRS_1;
@@ -44,9 +43,6 @@ class World {
         }
 
         // this.players.push(player);
-    }
-
-    readIn(socket: ClientSocket, data: Buffer) {
     }
 }
 

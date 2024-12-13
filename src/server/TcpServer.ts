@@ -43,15 +43,18 @@ export default class TcpServer {
                             socket.state = -1;
                         }
                     } else if (socket.state === 1) {
-                        Login.readIn(socket, data);
+                        Login.decode(socket, data);
                     } else if (socket.state === 2) {
-                        World.readIn(socket, data);
+                        if (socket.player) {
+                            socket.player.decode(data);
+                        }
                     } else if (socket.state === 3) {
-                        await Js5.readIn(socket, data);
+                        await Js5.decode(socket, data);
                     } else {
                         socket.terminate();
                     }
                 } catch (err) {
+                    console.error(err);
                     socket.terminate();
                 }
             });

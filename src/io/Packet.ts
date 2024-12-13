@@ -254,13 +254,54 @@ export default class Packet {
         return this.#view.getUint8(this.pos++);
     }
 
+    g1_alt1(): number {
+        return (this.#view.getUint8(this.pos++) - 128) & 0xFF;
+    }
+
+    g1_alt2(): number {
+        return (-this.#view.getUint8(this.pos++)) & 0xFF;
+    }
+
+    g1_alt3(): number {
+        return (128 - this.#view.getUint8(this.pos++)) & 0xFF;
+    }
+
     g1b(): number {
         return this.#view.getInt8(this.pos++);
+    }
+
+    g1b_alt1(): number {
+        let val = (this.#view.getUint8(this.pos++) - 128) & 0xFF;
+        if (val > 0x7F) {
+            val -= 0xFF;
+        }
+        return val;
+    }
+
+    g1b_alt2(): number {
+        let val = (-this.#view.getUint8(this.pos++)) & 0xFF;
+        if (val > 0x7F) {
+            val -= 0xFF;
+        }
+        return val;
+    }
+
+    g1b_alt3(): number {
+        let val = (128 - this.#view.getUint8(this.pos++)) & 0xFF;
+        if (val > 0x7F) {
+            val -= 0xFF;
+        }
+        return val;
     }
 
     g2(): number {
         this.pos += 2;
         return this.#view.getUint16(this.pos - 2);
+    }
+
+    g2_alt3(): number {
+        this.pos += 2;
+        return ((this.#view.getUint8(this.pos - 1)) << 8) + ((this.#view.getUint8(this.pos - 2) - 128) & 0xFF);
     }
 
     g2s(): number {

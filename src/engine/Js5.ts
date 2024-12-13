@@ -5,7 +5,7 @@ import type ClientSocket from '#/server/ClientSocket.ts';
 class Js5 {
     cache = Js5OpenRs2Cache.OSRS_1;
 
-    async readIn(socket: ClientSocket, data: Buffer) {
+    async decode(socket: ClientSocket, data: Buffer) {
         const buf = new Packet(data);
 
         while (buf.available > 0) {
