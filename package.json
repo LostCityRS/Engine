@@ -16,6 +16,7 @@
     "typescript": "^5.0.0"
   },
   "dependencies": {
+    "@fastify/autoload": "^6.0.2",
     "@fastify/static": "^8.0.3",
     "@fastify/view": "^10.0.1",
     "axios": "^1.7.8",

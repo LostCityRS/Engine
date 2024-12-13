@@ -8,8 +8,10 @@ import TcpSocket from '#/server/TcpSocket.ts';
 import Packet from '#/io/Packet.ts';
 
 export default class TcpServer {
-    start(port: number) {
-        const server = net.createServer(s => {
+    server: net.Server;
+
+    constructor() {
+        this.server = net.createServer(s => {
             s.setTimeout(30000);
             s.setNoDelay(true);
 
@@ -73,12 +75,18 @@ export default class TcpServer {
                 s.destroy();
             });
         });
+    }
 
-        server.listen({
-            host: '0.0.0.0',
-            port: port
-        }, () => {
-            console.log(`Listening on port ${port}`);
+    start(port: number): Promise<void> {
+        return new Promise((res) => {
+            this.server.listen({
+                host: '0.0.0.0',
+                port: port
+            }, () => {
+                console.log(`Listening on port ${port}`);
+
+                res();
+            });
         });
     }
 }
