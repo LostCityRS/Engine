@@ -10,6 +10,16 @@ export default class Packet {
 
     private static readonly CRC32_POLYNOMIAL = 0xEDB88320;
 
+    private static cacheMinCount = 0;
+    private static cacheMidCount = 0;
+    private static cacheMaxCount = 0;
+    private static cacheMassiveCount = 0;
+
+    private static cacheMin: Packet[] = []; // 100 B
+    private static cacheMid: Packet[] = []; // 5 KB
+    private static cacheMax: Packet[] = []; // 30 KB
+    private static cacheMassive: Packet[] = []; // 10 MB
+
     static {
         for (let i: number = 0; i < 32; i++) {
             this.bitmask[i] = (1 << i) - 1;
@@ -65,6 +75,16 @@ export default class Packet {
     }
 
     static alloc(size: number): Packet {
+        if (size === 100 && Packet.cacheMinCount > 0) {
+            return Packet.cacheMin[--Packet.cacheMinCount];
+        } else if (size === 5_000 && Packet.cacheMidCount > 0) {
+            return Packet.cacheMid[--Packet.cacheMidCount];
+        } else if (size === 30_000 && Packet.cacheMaxCount > 0) {
+            return Packet.cacheMax[--Packet.cacheMaxCount];
+        } else if (size === 10_000_000 && Packet.cacheMassiveCount > 0) {
+            return Packet.cacheMassive[--Packet.cacheMassiveCount];
+        }
+
         return new Packet(new Uint8Array(size));
     }
 
@@ -86,6 +106,21 @@ export default class Packet {
         this.#view = new DataView(this.data.buffer);
         this.pos = 0;
         this.bitPos = 0;
+    }
+
+    release() {
+        this.pos = 0;
+        this.bitPos = 0;
+
+        if (this.data.length === 100 && Packet.cacheMinCount < 100) {
+            Packet.cacheMin[Packet.cacheMinCount++] = this;
+        } else if (this.data.length === 5_000 && Packet.cacheMidCount < 250) {
+            Packet.cacheMid[Packet.cacheMidCount++] = this;
+        } else if (this.data.length === 30_000 && Packet.cacheMaxCount < 50) {
+            Packet.cacheMax[Packet.cacheMaxCount++] = this;
+        } else if (this.data.length === 10_000_000 && Packet.cacheMassiveCount < 10) {
+            Packet.cacheMassive[Packet.cacheMassiveCount++] = this;
+        }
     }
 
     get available(): number {

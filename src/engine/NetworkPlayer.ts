@@ -8,10 +8,16 @@ import type ServerMessage from '#/network/server/ServerMessage.ts';
 
 import GameServerRepository from '#/network/os1/server/prot/GameServerRepository.ts';
 import GameClientRepository from '#/network/os1/client/prot/game/GameClientRepository.ts';
+import GameClientLimit from '#/network/client/codec/game/GameClientLimit.ts';
+import GameMessageDecoder from '#/network/client/codec/game/GameMessageDecoder.ts';
 
 export default class NetworkPlayer extends Player {
     static serverRepo = new GameServerRepository();
     static clientRepo = new GameClientRepository();
+
+    static in = Packet.alloc(5000); // shared input buffer because processing is synchronous
+
+    client: ClientSocket;
 
     constructor(client: ClientSocket) {
         super();
@@ -20,41 +26,73 @@ export default class NetworkPlayer extends Player {
         this.client.player = this;
     }
 
-    // todo: stream based sockets
-    decode(data: Buffer) {
-        const buf = new Packet(data);
-
-        while (buf.available > 0) {
-            const opcode = buf.g1();
-
-            const decoder = NetworkPlayer.clientRepo.getDecoder(opcode);
-            if (typeof decoder === 'undefined') {
-                console.error(`Unregistered game message: ${opcode}`);
-                break;
-            }
-
-            const handler = NetworkPlayer.clientRepo.getHandler(opcode);
-            if (typeof handler === 'undefined') {
-                console.error(`Unregistered game message handler: ${opcode}`);
-                break;
-            }
-
-            // todo: check if x bytes are available
-            let length = decoder.size;
-            if (decoder.size === -1) {
-                length = buf.g1();
-            } else if (decoder.size === -2) {
-                length = buf.g2();
-            }
-
-            const start = buf.pos;
-            const read = decoder.read(buf, length);
-            buf.pos = start + length;
-
-            if (!handler.handle(read, this)) {
-                console.error(`Packet handler: ${read.constructor.name} returned false`);
-            }
+    read() {
+        let available = this.client.available;
+        if (available < 1) {
+            return false;
         }
+
+        if (this.client.packetType === -1) {
+            this.client.read(NetworkPlayer.in.data, 0, 1);
+            available -= 1;
+
+            NetworkPlayer.in.pos = 0;
+            this.client.packetType = NetworkPlayer.in.g1(); // todo: isaac
+
+            const decoder = NetworkPlayer.clientRepo.getDecoder(this.client.packetType);
+            if (typeof decoder === 'undefined') {
+                // todo: disconnect the player
+                this.client.packetType = -1;
+                return false;
+            }
+
+            this.client.packetSize = decoder.size;
+        }
+
+        if (this.client.packetSize === -1) {
+            if (available < 1) {
+                return false;
+            }
+
+            this.client.read(NetworkPlayer.in.data, 0, 1);
+            available -= 1;
+
+            NetworkPlayer.in.pos = 0;
+            this.client.packetSize = NetworkPlayer.in.g1();
+        } else if (this.client.packetSize === -2) {
+            if (available < 2) {
+                return false;
+            }
+
+            this.client.read(NetworkPlayer.in.data, 0, 2);
+            available -= 2;
+
+            NetworkPlayer.in.pos = 0;
+            this.client.packetSize = NetworkPlayer.in.g2();
+        }
+
+        if (available < this.client.packetSize) {
+            return false;
+        }
+
+        this.client.read(NetworkPlayer.in.data, 0, this.client.packetSize);
+        available -= this.client.packetSize;
+
+        // we know these exist if we got this far
+        const decoder = NetworkPlayer.clientRepo.getDecoder(this.client.packetType)! as GameMessageDecoder;
+        const handler = NetworkPlayer.clientRepo.getHandler(this.client.packetType)!;
+
+        NetworkPlayer.in.pos = 0;
+        const message = decoder.read(NetworkPlayer.in, this.client.packetSize);
+
+        if (decoder.limit === GameClientLimit.USER) {
+            this.client.userLimit++;
+        } else if (decoder.limit === GameClientLimit.CLIENT) {
+            this.client.clientLimit++;
+        }
+
+        this.client.packetType = -1;
+        return handler.handle(message, this);
     }
 
     write(message: ServerMessage) {
@@ -62,12 +100,12 @@ export default class NetworkPlayer extends Player {
             return;
         }
 
-        const buf = Packet.alloc(5000);
-
         const encoder = NetworkPlayer.serverRepo.getEncoder(message);
         if (typeof encoder === 'undefined') {
             throw new Error(`Missing ${message.constructor.name} message encoder`);
         }
+
+        const buf = Packet.alloc(5000);
 
         if (buf.available < encoder.test(message)) {
             throw new Error(`Not enough bytes to write ${message.constructor.name} message`);
@@ -90,5 +128,6 @@ export default class NetworkPlayer extends Player {
         }
 
         this.client.write(buf);
+        buf.release();
     }
 }

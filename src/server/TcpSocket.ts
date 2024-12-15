@@ -18,6 +18,21 @@ export default class TcpSocket extends ClientSocket {
         }
     }
 
+    buffer(data: Buffer): void {
+        this.inBuffer.set(data, this.inBufferPos);
+        this.inBufferPos += data.length;
+    }
+
+    get available(): number {
+        return this.inBufferPos;
+    }
+
+    read(dest: Uint8Array, offset: number, length: number): void {
+        dest.set(this.inBuffer.subarray(0, length), offset);
+        this.inBufferPos -= length;
+        this.inBuffer.set(this.inBuffer.subarray(length), 0);
+    }
+
     close() {
         this.socket.end();
     }

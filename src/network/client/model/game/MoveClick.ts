@@ -1,9 +1,6 @@
-import GameClientMessage from '#/network/client/GameClientMessage.ts';
-import GameClientLimit from '#/network/client/prot/game/GameClientLimit.ts';
+import ClientMessage from '#/network/client/ClientMessage.ts';
 
-export default class MoveClick extends GameClientMessage {
-    limit = GameClientLimit.USER;
-
+export default class MoveClick extends ClientMessage {
     // todo: make a routefind type?
     route: { x: number, z: number }[];
     ctrlHeld: boolean;

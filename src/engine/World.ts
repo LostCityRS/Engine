@@ -18,12 +18,34 @@ class World {
     }
 
     cycle() {
+        // read client input
+        for (let i = 0; i < this.players.length; i++) {
+            const player = this.players[i];
+            if (!(player instanceof NetworkPlayer)) {
+                continue;
+            }
+
+            if (player.client.state === -1) {
+                this.players.splice(i--, 1);
+                continue;
+            }
+
+            // the client has code like `for (int i = 0; i < 5 && read(); i++)` which mirrors this logic
+
+            player.client.userLimit = 0;
+            player.client.clientLimit = 0;
+
+            while (player.client.userLimit < 5 && player.client.clientLimit < 50 && player.read()) {
+                // empty
+            }
+        }
+
         // todo: account for drift due to event loop/OS scheduling
         setTimeout(this.cycle.bind(this), 600);
     }
 
     addPlayer(player: Player) {
-        if (player instanceof NetworkPlayer && player.client) {
+        if (player instanceof NetworkPlayer) {
             // todo: run login script, check the login reply from it, forward response to client
             const reply = Packet.alloc(6);
             reply.p1(2);
@@ -32,13 +54,13 @@ class World {
             reply.p2(0);
             reply.p1(0);
             player.client.write(reply);
-            player.client.state = 2;
+            player.client.state = 1;
 
             player.write(new RebuildNormal(3222, 3222));
             player.write(new IfOpenTop(548));
         }
 
-        // this.players.push(player);
+        this.players.push(player);
     }
 }
 

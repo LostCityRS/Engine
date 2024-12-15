@@ -17,6 +17,9 @@ class Js5 {
     static serverRepo = new Js5ServerRepository();
     static clientRepo = new Js5ClientRepository();
 
+    static in = Packet.alloc(4);
+
+    clients: ClientSocket[] = [];
     urgent: Js5Request[] = [];
     prefetch: Js5Request[] = [];
 
@@ -27,9 +30,56 @@ class Js5 {
     }
 
     async cycle() {
-        // todo: limit # of requests per client?
+        // todo: limit # of requests per client
+
+        for (let i = 0; i < this.clients.length; i++) {
+            const client = this.clients[i];
+            if (client.state === -1) {
+                this.clients.splice(i--, 1);
+                continue;
+            }
+
+            let available = client.available;
+            while (client.prefetchLimit < 20 && client.urgentLimit < 20 && available > 0) {
+                if (client.packetType === -1) {
+                    client.read(Js5.in.data, 0, 1);
+                    Js5.in.pos = 0;
+                    client.packetType = Js5.in.g1();
+                    available -= 1;
+
+                    const decoder = Js5.clientRepo.getDecoder(client.packetType);
+                    if (!decoder) {
+                        break;
+                    }
+
+                    client.packetSize = decoder.size;
+                }
+
+                if (available < client.packetSize) {
+                    break;
+                }
+
+                const decoder = Js5.clientRepo.getDecoder(client.packetType)!;
+                const handler = Js5.clientRepo.getHandler(client.packetType)!;
+
+                client.read(Js5.in.data, 0, client.packetSize);
+                Js5.in.pos = 0;
+                available -= client.packetSize;
+
+                const message = decoder.read(Js5.in, decoder.size);
+                client.packetType = -1;
+
+                if (!handler.handle(message, client)) {
+                    break;
+                }
+            }
+        }
+
         for (let i = 0; i < this.urgent.length; i++) {
             const req = this.urgent.splice(i--, 1)[0];
+            if (req.client.state === -1) {
+                continue;
+            }
 
             const data = await Js5.cache.getGroup(req.archive, req.group);
             if (!data) {
@@ -42,13 +92,17 @@ class Js5 {
                 continue;
             }
 
-            const buf = Packet.alloc(1_000_000); // todo: buffer pooling
+            const buf = Packet.alloc(10_000_000);
             encoder.write(buf, message);
             req.client.write(buf);
+            buf.release();
         }
 
         for (let i = 0; i < this.prefetch.length; i++) {
             const req = this.prefetch.splice(i--, 1)[0];
+            if (req.client.state === -1) {
+                continue;
+            }
 
             const data = await Js5.cache.getGroup(req.archive, req.group);
             if (!data) {
@@ -61,47 +115,23 @@ class Js5 {
                 continue;
             }
 
-            const buf = Packet.alloc(1_000_000); // todo: buffer pooling
+            const buf = Packet.alloc(10_000_000);
             encoder.write(buf, message);
             req.client.write(buf);
+            buf.release();
         }
 
         // todo: account for drift due to event loop/OS scheduling
         setTimeout(this.cycle.bind(this), 50);
     }
 
-    async decode(client: ClientSocket, data: Buffer) {
-        const buf = new Packet(data);
+    addClient(client: ClientSocket) {
+        const reply = Packet.alloc(1);
+        reply.p1(0);
+        client.write(reply);
+        client.state = 2;
 
-        while (buf.available > 0) {
-            const opcode = buf.g1();
-
-            const decoder = Js5.clientRepo.getDecoder(opcode);
-            if (typeof decoder === 'undefined') {
-                console.error(`Unregistered js5 message: ${opcode}`);
-                break;
-            }
-
-            const handler = Js5.clientRepo.getHandler(opcode);
-            if (typeof handler === 'undefined') {
-                console.error(`Unregistered js5 message handler: ${opcode}`);
-                break;
-            }
-
-            const length = decoder.size; // we know these are always a fixed length
-            if (buf.available < length) {
-                // todo: fragmentation
-                break;
-            }
-
-            const start = buf.pos;
-            const read = decoder.read(buf, length);
-            buf.pos = start + length;
-
-            if (!handler.handle(read, client)) {
-                console.error(`Packet handler: ${read.constructor.name} returned false`);
-            }
-        }
+        this.clients.push(client);
     }
 }
 
