@@ -30,8 +30,6 @@ class Js5 {
     }
 
     async cycle() {
-        // todo: limit # of requests per client
-
         for (let i = 0; i < this.clients.length; i++) {
             const client = this.clients[i];
             if (client.state === -1) {
@@ -40,7 +38,7 @@ class Js5 {
             }
 
             let available = client.available;
-            while (client.prefetchLimit < 20 && client.urgentLimit < 20 && available > 0) {
+            while (available > 0) {
                 if (client.packetType === -1) {
                     client.read(Js5.in.data, 0, 1);
                     Js5.in.pos = 0;
@@ -81,6 +79,8 @@ class Js5 {
                 continue;
             }
 
+            req.client.urgentLimit--;
+
             const data = await Js5.cache.getGroup(req.archive, req.group);
             if (!data) {
                 continue;
@@ -103,6 +103,8 @@ class Js5 {
             if (req.client.state === -1) {
                 continue;
             }
+
+            req.client.prefetchLimit--;
 
             const data = await Js5.cache.getGroup(req.archive, req.group);
             if (!data) {

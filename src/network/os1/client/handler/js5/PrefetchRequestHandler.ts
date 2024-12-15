@@ -5,9 +5,14 @@ import type ClientSocket from '#/server/ClientSocket.ts';
 
 export default class PrefetchRequestHandler extends MessageHandler {
     handle(message: PrefetchRequest, client: ClientSocket) {
+        if (client.prefetchLimit > 20) {
+            return true;
+        }
+
         const { archive, group } = message;
 
         Js5.prefetch.push({ client, archive, group });
+        client.prefetchLimit++;
         return true;
     }
 }
