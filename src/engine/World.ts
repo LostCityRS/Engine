@@ -2,8 +2,8 @@ import NetworkPlayer from '#/engine/NetworkPlayer.ts';
 import type Player from '#/engine/Player.ts';
 import Packet from '#/io/Packet.ts';
 import Js5OpenRs2Cache from '#/js5/Js5OpenRs2Cache.ts';
-import IfOpenTop from '#/network/server/game/model/IfOpenTop.ts';
-import RebuildNormal from '#/network/server/game/model/RebuildNormal.ts';
+import IfOpenTop from '#/network/server/model/game/IfOpenTop.ts';
+import RebuildNormal from '#/network/server/model/game/RebuildNormal.ts';
 
 class World {
     cache = Js5OpenRs2Cache.OSRS_1;
@@ -14,16 +14,12 @@ class World {
         await this.cache.predownload();
         await this.cache.loadKeys();
 
-        setTimeout(this.cycle.bind(this), 0);
+        this.cycle();
     }
 
     cycle() {
-        const start = Date.now();
-
-        const end = Date.now();
-
-        // todo: account for drift due to event loop/OS scheduling?
-        setTimeout(this.cycle.bind(this), 600 - (end - start));
+        // todo: account for drift due to event loop/OS scheduling
+        setTimeout(this.cycle.bind(this), 600);
     }
 
     addPlayer(player: Player) {

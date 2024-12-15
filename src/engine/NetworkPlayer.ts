@@ -6,8 +6,8 @@ import type ClientSocket from '#/server/ClientSocket.ts';
 
 import type ServerMessage from '#/network/server/ServerMessage.ts';
 
-import GameServerRepository from '#/network/os1/server/game/prot/GameServerRepository.ts';
-import GameClientRepository from '#/network/os1/client/game/prot/GameClientRepository.ts';
+import GameServerRepository from '#/network/os1/server/prot/GameServerRepository.ts';
+import GameClientRepository from '#/network/os1/client/prot/game/GameClientRepository.ts';
 
 export default class NetworkPlayer extends Player {
     static serverRepo = new GameServerRepository();
