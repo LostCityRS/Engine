@@ -4,12 +4,12 @@ import Player from '#/engine/Player.ts';
 
 import type ClientSocket from '#/server/ClientSocket.ts';
 
-import type ServerMessage from '#/network/server/ServerMessage.ts';
-
 import GameServerRepository from '#/network/os1/server/prot/GameServerRepository.ts';
 import GameClientRepository from '#/network/os1/client/prot/game/GameClientRepository.ts';
 import GameClientLimit from '#/network/client/codec/game/GameClientLimit.ts';
 import GameMessageDecoder from '#/network/client/codec/game/GameMessageDecoder.ts';
+import type GameServerMessage from '#/network/server/GameServerMessage.ts';
+import GameServerPriority from '#/network/server/prot/game/GameServerPriority.ts';
 
 export default class NetworkPlayer extends Player {
     static serverRepo = new GameServerRepository();
@@ -18,6 +18,8 @@ export default class NetworkPlayer extends Player {
     static in = Packet.alloc(5000); // shared input buffer because processing is synchronous
 
     client: ClientSocket;
+    buffer: GameServerMessage[] = [];
+    bufferSize = 0;
 
     constructor(client: ClientSocket) {
         super();
@@ -95,7 +97,7 @@ export default class NetworkPlayer extends Player {
         return handler.handle(message, this);
     }
 
-    write(message: ServerMessage) {
+    write(message: GameServerMessage, force = false) {
         if (!this.client) {
             return;
         }
@@ -105,29 +107,46 @@ export default class NetworkPlayer extends Player {
             throw new Error(`Missing ${message.constructor.name} message encoder`);
         }
 
-        const buf = Packet.alloc(5000);
+        const realSize = encoder.test(message);
 
-        if (buf.available < encoder.test(message)) {
-            throw new Error(`Not enough bytes to write ${message.constructor.name} message`);
-        }
-
-        buf.p1(encoder.opcode);
+        let required = 1 + realSize; // opcode + real size
         if (encoder.size === -1) {
-            buf.p1(0);
+            required += 1; // psize1
         } else if (encoder.size === -2) {
-            buf.p2(0);
-        }
-        const start = buf.pos;
-
-        encoder.write(buf, message);
-
-        if (encoder.size === -1) {
-            buf.psize1(buf.pos - start);
-        } else if (encoder.size === -2) {
-            buf.psize2(buf.pos - start);
+            required += 2; // psize2
         }
 
-        this.client.write(buf);
-        buf.release();
+        if (force || message.priority === GameServerPriority.IMMEDIATE) {
+            const buf = Packet.alloc(30000);
+            if (buf.length < realSize) {
+                throw new Error(`Cannot write ${message.constructor.name} message`);
+            }
+
+            buf.p1(encoder.opcode); // todo: isaac
+            if (encoder.size === -1) {
+                buf.p1(0);
+            } else if (encoder.size === -2) {
+                buf.p2(0);
+            }
+            const start = buf.pos;
+
+            encoder.write(buf, message);
+
+            if (encoder.size === -1) {
+                buf.psize1(buf.pos - start);
+            } else if (encoder.size === -2) {
+                buf.psize2(buf.pos - start);
+            }
+
+            this.client.write(buf);
+            buf.release();
+        } else if (message.priority === GameServerPriority.BUFFERED) {
+            if (required + this.bufferSize > 5000) {
+                throw new Error('Buffer full');
+            }
+
+            this.buffer.push(message);
+            this.bufferSize += required;
+        }
     }
 }

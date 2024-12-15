@@ -9,6 +9,7 @@ class World {
     cache = Js5OpenRs2Cache.OSRS_1;
 
     players: Player[] = [];
+    currentTick: number = 100; // start with a minute of uptime in case scripts skip testing 0-checks
 
     async load() {
         await this.cache.predownload();
@@ -39,6 +40,31 @@ class World {
                 // empty
             }
         }
+
+        // process players
+        for (let i = 0; i < this.players.length; i++) {
+            const player = this.players[i];
+
+            // todo
+        }
+
+        // write client output
+        for (let i = 0; i < this.players.length; i++) {
+            const player = this.players[i];
+            if (!(player instanceof NetworkPlayer)) {
+                continue;
+            }
+
+            if (player.buffer.length > 0) {
+                for (const message of player.buffer) {
+                    player.write(message, true);
+                }
+
+                player.buffer.length = 0;
+            }
+        }
+
+        this.currentTick++;
 
         // todo: account for drift due to event loop/OS scheduling
         setTimeout(this.cycle.bind(this), 600);
