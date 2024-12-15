@@ -1,7 +1,7 @@
 import ServerRepository from '#/network/server/prot/ServerRepository.ts';
 
-import GameMessage from '#/network/server/model/game/GameMessage.ts';
-import GameMessageEncoder from '#/network/os1/server/codec/game/GameMessageEncoder.ts';
+import GameMessage from '#/network/server/model/game/MessageGame.ts';
+import GameMessageEncoder from '#/network/os1/server/codec/game/MessageGameEncoder.ts';
 import IfOpenTop from '#/network/server/model/game/IfOpenTop.ts';
 import IfOpenTopEncoder from '#/network/os1/server/codec/game/IfOpenTopEncoder.ts';
 import Logout from '#/network/server/model/game/Logout.ts';
@@ -14,6 +14,10 @@ import RebuildNormal from '#/network/server/model/game/RebuildNormal.ts';
 import RebuildNormalEncoder from '#/network/os1/server/codec/game/RebuildNormalEncoder.ts';
 import PrivateMessage from '#/network/server/model/game/PrivateMessage.ts';
 import PrivateMessageEncoder from '#/network/os1/server/codec/game/PrivateMessageEncoder.ts';
+import PlayerInfo from '#/network/server/model/game/PlayerInfo.ts';
+import PlayerInfoEncoder from '#/network/os1/server/codec/game/PlayerInfoEncoder.ts';
+import IfOpenSub from '#/network/server/model/game/IfOpenSub.ts';
+import IfOpenSubEncoder from '#/network/os1/server/codec/game/IfOpenSubEncoder.ts';
 
 export default class GameServerRepository extends ServerRepository {
     constructor() {
@@ -26,5 +30,7 @@ export default class GameServerRepository extends ServerRepository {
         this.bind(MidiSong, new MidiSongEncoder());
         this.bind(PrivateMessage, new PrivateMessageEncoder());
         this.bind(RebuildNormal, new RebuildNormalEncoder());
+        this.bind(PlayerInfo, new PlayerInfoEncoder());
+        this.bind(IfOpenSub, new IfOpenSubEncoder());
     }
 }

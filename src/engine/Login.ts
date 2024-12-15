@@ -30,7 +30,7 @@ class Login {
                 // todo: read login packet
 
                 const player = new NetworkPlayer(client);
-                World.addPlayer(player);
+                World.addPlayer(player, opcode === 18);
             } else {
                 client.close();
             }

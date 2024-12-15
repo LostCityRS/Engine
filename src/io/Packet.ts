@@ -244,6 +244,12 @@ export default class Packet {
         this.pos += len;
     }
 
+    pdata_alt1(src: Uint8Array, off: number = 0, len: number = src.length): void {
+        for (let i: number = off + len - 1; i >= off; i--) {
+            this.#view.setUint8(this.pos++, src[i]);
+        }
+    }
+
     pdata_alt2(src: Uint8Array, off: number = 0, len: number = src.length): void {
         for (let i: number = off; i < off + len; i++) {
             this.#view.setUint8(this.pos++, 128 + src[i]);

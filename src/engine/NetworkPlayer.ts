@@ -43,7 +43,8 @@ export default class NetworkPlayer extends Player {
 
             const decoder = NetworkPlayer.clientRepo.getDecoder(this.client.packetType);
             if (typeof decoder === 'undefined') {
-                // todo: disconnect the player
+                console.log('Unhandled packet type', this.client.packetType);
+                this.client.inBufferPos = 0;
                 this.client.packetType = -1;
                 return false;
             }
