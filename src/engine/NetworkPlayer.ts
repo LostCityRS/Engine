@@ -29,7 +29,7 @@ export default class NetworkPlayer extends Player {
 
             const decoder = NetworkPlayer.clientRepo.getDecoder(opcode);
             if (typeof decoder === 'undefined') {
-                console.error(`Unregistered game message decoder: ${opcode}`);
+                console.error(`Unregistered game message: ${opcode}`);
                 break;
             }
 

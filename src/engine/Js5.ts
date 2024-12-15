@@ -1,5 +1,6 @@
 import Packet from '#/io/Packet.ts';
 import Js5OpenRs2Cache from '#/js5/Js5OpenRs2Cache.ts';
+import Js5ClientRepository from '#/network/os1/client/prot/js5/Js5ClientRepository.ts';
 import Js5ServerRepository from '#/network/os1/server/prot/Js5ServerRepository.ts';
 import Js5GroupResponse from '#/network/server/model/js5/Js5GroupResponse.ts';
 import type ClientSocket from '#/server/ClientSocket.ts';
@@ -14,6 +15,7 @@ class Js5 {
     static cache = Js5OpenRs2Cache.OSRS_1;
 
     static serverRepo = new Js5ServerRepository();
+    static clientRepo = new Js5ClientRepository();
 
     urgent: Js5Request[] = [];
     prefetch: Js5Request[] = [];
@@ -74,27 +76,30 @@ class Js5 {
         while (buf.available > 0) {
             const opcode = buf.g1();
 
-            if (opcode === 0 || opcode === 1) {
-                const archive = buf.g1();
-                const group = buf.g2();
-
-                if (opcode === 0) {
-                    this.prefetch.push({ client, archive, group });
-                } else if (opcode === 1) {
-                    this.urgent.push({ client, archive, group });
-                }
-            } else if (opcode === 2) {
-                console.log('js5 - is logged in');
-                buf.pos += 3;
-            } else if (opcode === 3) {
-                console.log('js5 - is logged out');
-                buf.pos += 3;
-            } else if (opcode === 4) {
-                console.log('js5 - xor swap (unsupported, js5io error)');
-                client.close();
+            const decoder = Js5.clientRepo.getDecoder(opcode);
+            if (typeof decoder === 'undefined') {
+                console.error(`Unregistered js5 message: ${opcode}`);
                 break;
-            } else {
-                console.log('js5 - unhandled opcode', buf.data);
+            }
+
+            const handler = Js5.clientRepo.getHandler(opcode);
+            if (typeof handler === 'undefined') {
+                console.error(`Unregistered js5 message handler: ${opcode}`);
+                break;
+            }
+
+            const length = decoder.size; // we know these are always a fixed length
+            if (buf.available < length) {
+                // todo: fragmentation
+                break;
+            }
+
+            const start = buf.pos;
+            const read = decoder.read(buf, length);
+            buf.pos = start + length;
+
+            if (!handler.handle(read, client)) {
+                console.error(`Packet handler: ${read.constructor.name} returned false`);
             }
         }
     }
