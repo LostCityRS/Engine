@@ -113,7 +113,7 @@ class World {
             player.write(new IfOpenSub((548 << 16) | 103, 387, 0)); // toplevel:stone4 -> wornitems
             player.write(new IfOpenSub((548 << 16) | 104, 271, 0)); // toplevel:stone5 -> prayer
             player.write(new IfOpenSub((548 << 16) | 105, 192, 0)); // toplevel:stone6 -> magic
-            // player.write(new IfOpenSub((548 << 16) | 106, 0, 0)); // toplevel:stone7 -> todo
+            player.write(new IfOpenSub((548 << 16) | 106, 589, 0)); // toplevel:stone7 -> clanjoin
             player.write(new IfOpenSub((548 << 16) | 107, 550, 0)); // toplevel:stone8 -> friends2
             player.write(new IfOpenSub((548 << 16) | 108, 551, 0)); // toplevel:stone9 -> ignore2
             player.write(new IfOpenSub((548 << 16) | 109, 182, 0)); // toplevel:stone10 -> logout
