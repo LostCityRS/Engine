@@ -1,5 +1,3 @@
-import fs from 'fs';
-
 import Packet from '#/io/Packet.ts';
 import GZip from '#/io/GZip.ts';
 import BZip2 from '#/io/BZip2.ts';
@@ -34,20 +32,25 @@ export default class Js5Index {
         }
     }
 
-    crc = -1;
     version = 0;
     size = 0;
-    groupId: Int32Array = new Int32Array();
-    groupNameHash: Int32Array = new Int32Array();
-    groupNameHashTable: Map<number, number> = new Map();
+    groupId = new Int32Array();
+    groupNameHash = new Int32Array();
+    groupNameHashTable = new Map<number, number>();
     capacity = 0;
-    groupChecksum: Int32Array = new Int32Array();
-    groupVersion: Int32Array = new Int32Array();
-    groupSize: Int32Array = new Int32Array();
+    groupChecksum = new Int32Array();
+    groupVersion = new Int32Array();
+    groupSize = new Int32Array();
     fileId: (Int32Array | null)[] = [];
     fileNameHash: Int32Array[] = [];
     fileNameHashTable: Map<number, number>[] = [];
-    groupCapacity: Int32Array = new Int32Array();
+    groupCapacity = new Int32Array();
+
+    packed: (Uint8Array | null)[] = [];
+    unpacked: (Uint8Array | null)[][] = [];
+    crc = 0;
+    discardPacked = false;
+    discardUnpacked = false;
 
     decode(src: Uint8Array) {
         this.crc = Packet.getcrc(src);
@@ -94,6 +97,8 @@ export default class Js5Index {
         this.groupVersion = new Int32Array(this.capacity);
         this.fileId = new Array(this.capacity).fill(null);
         this.groupCapacity = new Int32Array(this.capacity);
+        this.packed = new Array(this.capacity).fill(null);
+        this.unpacked = new Array(this.capacity).fill([]);
 
         if (hasNames) {
             this.groupNameHash = new Int32Array(this.capacity);
