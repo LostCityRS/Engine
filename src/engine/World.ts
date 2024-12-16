@@ -76,6 +76,8 @@ class World {
     }
 
     addPlayer(player: Player, reconnect = false) {
+        this.players.push(player);
+
         if (player instanceof NetworkPlayer) {
             // todo: run login script, check the login reply from it, forward response to client
             const reply = Packet.alloc(6);
@@ -83,43 +85,42 @@ class World {
                 reply.p1(15);
                 player.client.write(reply);
                 player.client.state = 1;
-            } else {
-                reply.p1(2);
-                reply.p1(0);
-                reply.p1(0);
-                reply.p2(0);
-                reply.p1(0);
-                player.client.write(reply);
-                player.client.state = 1;
-
-                player.write(new RebuildNormal(3222, 3222));
-
-                // runescript: mes("Welcome to RuneScape.");
-                player.write(new MessageGame("Welcome to RuneScape."));
-
-                // runescript: if_opentop(toplevel);
-                player.write(new IfOpenTop(548));
-    
-                // runescript: if_opensub(toplevel:x, y, ...);
-                player.write(new IfOpenSub((548 << 16) | 90, 137, 0)); // toplevel:chat -> chat
-                player.write(new IfOpenSub((548 << 16) | 99, 92, 0)); // toplevel:stone0 -> combat-unarmed
-                player.write(new IfOpenSub((548 << 16) | 100, 320, 0)); // toplevel:stone1 -> stats
-                player.write(new IfOpenSub((548 << 16) | 101, 274, 0)); // toplevel:stone2 -> questjournal_v2
-                player.write(new IfOpenSub((548 << 16) | 102, 149, 0)); // toplevel:stone3 -> inventory
-                player.write(new IfOpenSub((548 << 16) | 103, 387, 0)); // toplevel:stone4 -> wornitems
-                player.write(new IfOpenSub((548 << 16) | 104, 271, 0)); // toplevel:stone5 -> prayer
-                player.write(new IfOpenSub((548 << 16) | 105, 192, 0)); // toplevel:stone6 -> magic
-                player.write(new IfOpenSub((548 << 16) | 106, 0, 0)); // toplevel:stone7 -> todo
-                player.write(new IfOpenSub((548 << 16) | 107, 550, 0)); // toplevel:stone8 -> friends2
-                player.write(new IfOpenSub((548 << 16) | 108, 551, 0)); // toplevel:stone9 -> ignore2
-                player.write(new IfOpenSub((548 << 16) | 109, 182, 0)); // toplevel:stone10 -> logout
-                player.write(new IfOpenSub((548 << 16) | 110, 261, 0)); // toplevel:stone11 -> options
-                player.write(new IfOpenSub((548 << 16) | 111, 464, 0)); // toplevel:stone12 -> emotes
-                player.write(new IfOpenSub((548 << 16) | 112, 0, 0)); // toplevel:stone13 -> todo
+                return;
             }
-        }
 
-        this.players.push(player);
+            reply.p1(2);
+            reply.p1(0);
+            reply.p1(0);
+            reply.p2(0);
+            reply.p1(0);
+            player.client.write(reply);
+            player.client.state = 1;
+
+            player.write(new RebuildNormal(3222, 3222));
+
+            // runescript: mes("Welcome to RuneScape.");
+            player.write(new MessageGame("Welcome to RuneScape."));
+
+            // runescript: if_opentop(toplevel);
+            player.write(new IfOpenTop(548));
+
+            // runescript: if_openoverlay(toplevel:x, y);
+            player.write(new IfOpenSub((548 << 16) | 90, 137, 0)); // toplevel:chat -> chat
+            player.write(new IfOpenSub((548 << 16) | 99, 92, 0)); // toplevel:stone0 -> combat-unarmed
+            player.write(new IfOpenSub((548 << 16) | 100, 320, 0)); // toplevel:stone1 -> stats
+            player.write(new IfOpenSub((548 << 16) | 101, 274, 0)); // toplevel:stone2 -> questjournal_v2
+            player.write(new IfOpenSub((548 << 16) | 102, 149, 0)); // toplevel:stone3 -> inventory
+            player.write(new IfOpenSub((548 << 16) | 103, 387, 0)); // toplevel:stone4 -> wornitems
+            player.write(new IfOpenSub((548 << 16) | 104, 271, 0)); // toplevel:stone5 -> prayer
+            player.write(new IfOpenSub((548 << 16) | 105, 192, 0)); // toplevel:stone6 -> magic
+            // player.write(new IfOpenSub((548 << 16) | 106, 0, 0)); // toplevel:stone7 -> todo
+            player.write(new IfOpenSub((548 << 16) | 107, 550, 0)); // toplevel:stone8 -> friends2
+            player.write(new IfOpenSub((548 << 16) | 108, 551, 0)); // toplevel:stone9 -> ignore2
+            player.write(new IfOpenSub((548 << 16) | 109, 182, 0)); // toplevel:stone10 -> logout
+            player.write(new IfOpenSub((548 << 16) | 110, 261, 0)); // toplevel:stone11 -> options
+            player.write(new IfOpenSub((548 << 16) | 111, 464, 0)); // toplevel:stone12 -> emotes
+            // player.write(new IfOpenSub((548 << 16) | 112, 0, 0)); // toplevel:stone13 -> todo
+        }
     }
 }
 

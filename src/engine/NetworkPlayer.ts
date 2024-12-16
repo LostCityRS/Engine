@@ -10,6 +10,7 @@ import GameClientLimit from '#/network/client/codec/game/GameClientLimit.ts';
 import GameMessageDecoder from '#/network/client/codec/game/GameMessageDecoder.ts';
 import type GameServerMessage from '#/network/server/GameServerMessage.ts';
 import GameServerPriority from '#/network/server/prot/game/GameServerPriority.ts';
+import MessageGame from '#/network/server/model/game/MessageGame.ts';
 
 export default class NetworkPlayer extends Player {
     static serverRepo = new GameServerRepository();
@@ -149,5 +150,9 @@ export default class NetworkPlayer extends Player {
             this.buffer.push(message);
             this.bufferSize += required;
         }
+    }
+
+    messageGame(message: string) {
+        this.write(new MessageGame(message));
     }
 }

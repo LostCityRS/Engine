@@ -1,7 +1,9 @@
 import ClientRepository from '#/network/client/prot/ClientRepository.ts';
+import ClientCheatDecoder from '#/network/os1/client/codec/game/ClientCheatDecoder.ts';
 
 import MoveClickDecoder from '#/network/os1/client/codec/game/MoveClickDecoder.ts';
 import NoOpDecoder from '#/network/os1/client/codec/game/NoOpDecoder.ts';
+import ClientCheatHandler from '#/network/os1/client/handler/game/ClientCheatHandler.ts';
 import MoveClickHandler from '#/network/os1/client/handler/game/MoveClickHandler.ts';
 import NoOpHandler from '#/network/os1/client/handler/game/NoOpHandler.ts';
 
@@ -20,5 +22,7 @@ export default class GameClientRepository extends ClientRepository {
         this.bind(new NoOpDecoder(79, 4), new NoOpHandler());
         this.bind(new NoOpDecoder(178, 1), new NoOpHandler());
         this.bind(new NoOpDecoder(197, 0), new NoOpHandler());
+
+        this.bind(new ClientCheatDecoder(), new ClientCheatHandler())
     }
 }
