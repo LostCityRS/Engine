@@ -6,6 +6,8 @@ import NoOpDecoder from '#/network/os1/client/codec/game/NoOpDecoder.ts';
 import ClientCheatHandler from '#/network/os1/client/handler/game/ClientCheatHandler.ts';
 import MoveClickHandler from '#/network/os1/client/handler/game/MoveClickHandler.ts';
 import NoOpHandler from '#/network/os1/client/handler/game/NoOpHandler.ts';
+import LogoutDecoder from '../../codec/game/LogoutDecoder.ts';
+import LogoutHandler from '../../handler/game/LogoutHandler.ts';
 
 export default class GameClientRepository extends ClientRepository {
     constructor() {
@@ -24,5 +26,6 @@ export default class GameClientRepository extends ClientRepository {
         this.bind(new NoOpDecoder(197, 0), new NoOpHandler());
 
         this.bind(new ClientCheatDecoder(), new ClientCheatHandler())
+        this.bind(new LogoutDecoder(), new LogoutHandler())
     }
 }
