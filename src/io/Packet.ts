@@ -41,7 +41,7 @@ export default class Packet {
         }
     }
 
-    static getcrc(src: Uint8Array, offset: number, length: number): number {
+    static getcrc(src: Uint8Array, offset: number = 0, length: number = src.length): number {
         let crc = 0xffffffff;
         for (let i = offset; i < length; i++) {
             crc = (crc >>> 8) ^ (this.crctable[(crc ^ src[i]) & 0xFF]);
@@ -103,7 +103,7 @@ export default class Packet {
 
     constructor(src: Uint8Array) {
         this.data = src;
-        this.#view = new DataView(this.data.buffer);
+        this.#view = new DataView(src.buffer, src.byteOffset, src.byteLength);
         this.pos = 0;
         this.bitPos = 0;
     }
@@ -369,7 +369,7 @@ export default class Packet {
         return this.g1() === 1;
     }
 
-    gdata(dest: Uint8Array, offset: number, length: number): void {
+    gdata(dest: Uint8Array, offset: number = 0, length: number = dest.length): void {
         dest.set(this.data.subarray(this.pos, this.pos + length), offset);
         this.pos += length;
     }
