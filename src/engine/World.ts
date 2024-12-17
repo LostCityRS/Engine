@@ -1,7 +1,7 @@
 import NetworkPlayer from '#/engine/NetworkPlayer.ts';
 import type Player from '#/engine/Player.ts';
 import Packet from '#/io/Packet.ts';
-import Js5OpenRs2Cache from '#/js5/Js5OpenRs2Cache.ts';
+import OpenRs2 from '#/util/OpenRs2.ts';
 import MessageGame from '#/network/server/model/game/MessageGame.ts';
 import IfOpenSub from '#/network/server/model/game/IfOpenSub.ts';
 import IfOpenTop from '#/network/server/model/game/IfOpenTop.ts';
@@ -9,7 +9,7 @@ import PlayerInfo from '#/network/server/model/game/PlayerInfo.ts';
 import RebuildNormal from '#/network/server/model/game/RebuildNormal.ts';
 
 class World {
-    cache = Js5OpenRs2Cache.OSRS_1;
+    cache = OpenRs2.OSRS_1;
 
     players: Player[] = [];
     currentTick: number = 100; // start with a minute of uptime in case scripts skip testing 0-checks

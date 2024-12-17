@@ -1,5 +1,5 @@
 import type Packet from '#/io/Packet.ts';
-import Js5OpenRs2Cache from '#/js5/Js5OpenRs2Cache.ts';
+import OpenRs2 from '#/util/OpenRs2.ts';
 
 import MessageEncoder from '#/network/server/codec/MessageEncoder.ts';
 
@@ -23,7 +23,7 @@ export default class RebuildNormalEncoder extends MessageEncoder {
         // todo: better key provider
         for (let mx = (zx - 6) >> 3; mx <= (zx + 6) >> 3; mx++) {
             for (let mz = (zz - 6) >> 3; mz <= (zz + 6) >> 3; mz++) {
-                const key = Js5OpenRs2Cache.OSRS_1.getKey(mx, mz);
+                const key = OpenRs2.OSRS_1.getKey(mx, mz);
                 for (let i = 0; i < 4; i++) {
                     buf.p4_alt2(key[i]);
                 }

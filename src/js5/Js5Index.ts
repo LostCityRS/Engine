@@ -34,14 +34,14 @@ export default class Js5Index {
 
     version = 0;
     size = 0;
-    groupId = new Int32Array();
+    groupIds = new Int32Array();
     groupNameHash = new Int32Array();
     groupNameHashTable = new Map<number, number>();
     capacity = 0;
     groupChecksum = new Int32Array();
     groupVersion = new Int32Array();
     groupSize = new Int32Array();
-    fileId: (Int32Array | null)[] = [];
+    fileIds: (Int32Array | null)[] = [];
     fileNameHash: Int32Array[] = [];
     fileNameHashTable: Map<number, number>[] = [];
     groupCapacity = new Int32Array();
@@ -51,6 +51,11 @@ export default class Js5Index {
     crc = 0;
     discardPacked = false;
     discardUnpacked = false;
+
+    constructor(discardPacked: boolean, discardUnpacked: boolean) {
+        this.discardPacked = discardPacked;
+        this.discardUnpacked = discardUnpacked;
+    }
 
     decode(src: Uint8Array) {
         this.crc = Packet.getcrc(src);
@@ -77,17 +82,17 @@ export default class Js5Index {
 
         let prevGroupId = 0;
         let maxGroupId = -1;
-        this.groupId = new Int32Array(this.size);
+        this.groupIds = new Int32Array(this.size);
 
         for (let i = 0; i < this.size; i++) {
             if (protocol >= 7) {
                 // todo
             } else {
-                this.groupId[i] = prevGroupId += buf.g2();
+                this.groupIds[i] = prevGroupId += buf.g2();
             }
 
-            if (this.groupId[i] > maxGroupId) {
-                maxGroupId = this.groupId[i];
+            if (this.groupIds[i] > maxGroupId) {
+                maxGroupId = this.groupIds[i];
             }
         }
 
@@ -95,7 +100,7 @@ export default class Js5Index {
         this.groupSize = new Int32Array(this.capacity);
         this.groupChecksum = new Int32Array(this.capacity);
         this.groupVersion = new Int32Array(this.capacity);
-        this.fileId = new Array(this.capacity).fill(null);
+        this.fileIds = new Array(this.capacity).fill(null);
         this.groupCapacity = new Int32Array(this.capacity);
         this.packed = new Array(this.capacity).fill(null);
         this.unpacked = new Array(this.capacity).fill([]);
@@ -109,24 +114,24 @@ export default class Js5Index {
             }
 
             for (let i = 0; i < this.size; i++) {
-                this.groupNameHash[this.groupId[i]] = buf.g4();
-                this.groupNameHashTable.set(this.groupNameHash[this.groupId[i]], this.groupId[i]);
+                this.groupNameHash[this.groupIds[i]] = buf.g4();
+                this.groupNameHashTable.set(this.groupNameHash[this.groupIds[i]], this.groupIds[i]);
             }
         }
 
         for (let i = 0; i < this.size; i++) {
-            this.groupChecksum[this.groupId[i]] = buf.g4();
+            this.groupChecksum[this.groupIds[i]] = buf.g4();
         }
 
         for (let i = 0; i < this.size; i++) {
-            this.groupVersion[this.groupId[i]] = buf.g4();
+            this.groupVersion[this.groupIds[i]] = buf.g4();
         }
 
         for (let i = 0; i < this.size; i++) {
             if (protocol >= 7) {
                 // todo
             } else {
-                this.groupSize[this.groupId[i]] = buf.g2();
+                this.groupSize[this.groupIds[i]] = buf.g2();
             }
         }
 
@@ -134,9 +139,9 @@ export default class Js5Index {
             let prevFileId = 0;
             let maxFileId = -1;
 
-            const groupId = this.groupId[i];
+            const groupId = this.groupIds[i];
             const groupSize = this.groupSize[groupId];
-            this.fileId[groupId] = new Int32Array(groupSize);
+            this.fileIds[groupId] = new Int32Array(groupSize);
 
             for (let j = 0; j < groupSize; j++) {
                 let fileId = 0;
@@ -145,7 +150,7 @@ export default class Js5Index {
                 } else {
                     fileId = prevFileId += buf.g2();
                 }
-                this.fileId[groupId][j] = prevFileId;
+                this.fileIds[groupId][j] = prevFileId;
 
                 if (fileId > maxFileId) {
                     maxFileId = fileId;
@@ -154,7 +159,7 @@ export default class Js5Index {
 
             this.groupCapacity[groupId] = maxFileId + 1;
             if (maxFileId + 1 === groupSize) {
-                this.fileId[groupId] = null;
+                this.fileIds[groupId] = null;
             }
         }
 
@@ -163,7 +168,7 @@ export default class Js5Index {
             this.fileNameHashTable = new Array(this.capacity);
 
             for (let i = 0; i < this.size; i++) {
-                const groupId = this.groupId[i];
+                const groupId = this.groupIds[i];
                 const groupSize = this.groupSize[groupId];
 
                 this.fileNameHash[groupId] = new Int32Array(this.groupCapacity[groupId]);
@@ -175,8 +180,8 @@ export default class Js5Index {
 
                 for (let j = 0; j < groupSize; j++) {
                     let fileId = -1;
-                    if (this.fileId[groupId]) {
-                        fileId = this.fileId[groupId][j];
+                    if (this.fileIds[groupId]) {
+                        fileId = this.fileIds[groupId][j];
                     } else {
                         fileId = j;
                     }
@@ -186,5 +191,52 @@ export default class Js5Index {
                 }
             }
         }
+    }
+
+    unpackGroup(group: number, key: number[] = []) {
+        if (!this.packed[group] || !this.fileIds[group]) {
+            return false;
+        }
+
+        const files = this.groupSize[group];
+        const fileIds = this.fileIds[group];
+
+        let fullyUnpackedFiles = true;
+        for (let i = 0; i < files; i++) {
+            if (typeof this.unpacked[group][fileIds[i]] === 'undefined') {
+                fullyUnpackedFiles = false;
+                break;
+            }
+        }
+
+        if (fullyUnpackedFiles) {
+            return true;
+        }
+
+        let compressed = this.packed[group];
+        if (key.length === 0 || (key[0] === 0 && key[1] === 0 && key[2] === 0 && key[3] === 0)) {
+            // todo: copy bytes
+        } else {
+            // todo: copy bytes
+            // const buf = new Packet(compressed);
+            // buf.tinydec(key, 5, compressed.length);
+        }
+
+        let uncompressed = new Uint8Array();
+        try {
+            uncompressed = Js5Index.decompress(compressed);
+        } catch (err) {
+            console.error(err);
+        }
+
+        if (this.discardPacked) {
+            this.packed[group] = null;
+        }
+
+        if (files > 1) {
+            // tood
+        }
+
+        return true;
     }
 }

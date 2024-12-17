@@ -32,7 +32,7 @@ export default class Js5Pack extends Js5Index {
             buf.gdata(group);
 
             // todo: discardPacked
-            this.packed[this.groupId[i]] = group;
+            this.packed[this.groupIds[i]] = group;
         }
     }
 }

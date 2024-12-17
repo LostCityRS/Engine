@@ -13,8 +13,8 @@ type OpenRs2Xtea = {
     key: number[];
 };
 
-export default class Js5OpenRs2Cache {
-    static OSRS_1 = new Js5OpenRs2Cache(241);
+export default class OpenRs2 {
+    static OSRS_1 = new OpenRs2(241);
 
     id: number;
     keys: OpenRs2Xtea[] = [];
