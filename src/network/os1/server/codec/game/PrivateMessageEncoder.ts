@@ -9,9 +9,11 @@ export default class PrivateMessageEncoder extends MessageEncoder {
     size = -2;
 
     write(buf: Packet, message: PrivateMessage) {
-        buf.pjstr(message.message)
-        buf.p2(message.u1)
-        buf.p3(message.u2)
-        buf.p1(message.u3)
+        buf.pjstr(message.senderName)
+        buf.p2(message.senderId)
+        buf.p3(message.messageId)
+        buf.p1(message.senderRights)
+        //todo: psmart(len)
+        //todo: huffman encoded message.message
     }
 }
