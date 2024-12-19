@@ -18,6 +18,10 @@ import PlayerInfo from '#/network/server/model/game/PlayerInfo.ts';
 import PlayerInfoEncoder from '#/network/os1/server/codec/game/PlayerInfoEncoder.ts';
 import IfOpenSub from '#/network/server/model/game/IfOpenSub.ts';
 import IfOpenSubEncoder from '#/network/os1/server/codec/game/IfOpenSubEncoder.ts';
+import RunEnergy from '#/network/server/model/game/RunEnergy.ts';
+import RunEnergyEncoder from '../codec/game/RunEnergyEncoder.ts';
+import ChatSettings from '#/network/server/model/game/ChatSettings.ts';
+import ChatSettingsEncoder from '../codec/game/ChatSettingsEncoder.ts';
 
 export default class GameServerRepository extends ServerRepository {
     constructor() {
@@ -32,5 +36,7 @@ export default class GameServerRepository extends ServerRepository {
         this.bind(RebuildNormal, new RebuildNormalEncoder());
         this.bind(PlayerInfo, new PlayerInfoEncoder());
         this.bind(IfOpenSub, new IfOpenSubEncoder());
+        this.bind(RunEnergy, new RunEnergyEncoder());
+        this.bind(ChatSettings, new ChatSettingsEncoder());
     }
 }
