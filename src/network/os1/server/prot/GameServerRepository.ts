@@ -22,6 +22,14 @@ import RunEnergy from '#/network/server/model/game/RunEnergy.ts';
 import RunEnergyEncoder from '../codec/game/RunEnergyEncoder.ts';
 import ChatSettings from '#/network/server/model/game/ChatSettings.ts';
 import ChatSettingsEncoder from '../codec/game/ChatSettingsEncoder.ts';
+import RunWeight from '#/network/server/model/game/RunWeight.ts';
+import RunWeightEncoder from '../codec/game/RunWeightEncoder.ts';
+import UpdateSkill from '#/network/server/model/game/UpdateSkill.ts';
+import UpdateSkillEncoder from '../codec/game/UpdateSkillEncoder.ts';
+import PrivateChatFilter from '#/network/server/model/game/PrivateChatFilter.ts';
+import PrivateChatFilterEncoder from '../codec/game/PrivateChatFilterEncoder.ts';
+import PlaySound from '#/network/server/model/game/PlaySound.ts';
+import PlaySoundEncoder from '../codec/game/PlaySoundEncoder.ts';
 
 export default class GameServerRepository extends ServerRepository {
     constructor() {
@@ -38,5 +46,9 @@ export default class GameServerRepository extends ServerRepository {
         this.bind(IfOpenSub, new IfOpenSubEncoder());
         this.bind(RunEnergy, new RunEnergyEncoder());
         this.bind(ChatSettings, new ChatSettingsEncoder());
+        this.bind(RunWeight, new RunWeightEncoder());
+        this.bind(UpdateSkill, new UpdateSkillEncoder());
+        this.bind(PrivateChatFilter, new PrivateChatFilterEncoder());
+        this.bind(PlaySound, new PlaySoundEncoder());
     }
 }
