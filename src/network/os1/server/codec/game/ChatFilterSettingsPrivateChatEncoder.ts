@@ -4,7 +4,7 @@ import MessageEncoder from '#/network/server/codec/MessageEncoder.ts';
 
 import type PrivateChatFilter from '#/network/server/model/game/PrivateChatFilter.ts';
 
-export default class PrivateChatFilterEncoder extends MessageEncoder {
+export default class ChatFilterSettingsPrivateChatEncoder extends MessageEncoder {
     opcode = 70;
     size = 1;
 

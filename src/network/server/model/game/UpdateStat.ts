@@ -2,7 +2,7 @@ import GameServerMessage from '#/network/server/GameServerMessage.ts';
 
 import GameServerPriority from '#/network/server/prot/game/GameServerPriority.ts';
 
-export default class UpdateSkill extends GameServerMessage {
+export default class UpdateStat extends GameServerMessage {
     priority = GameServerPriority.BUFFERED;
 
     constructor(

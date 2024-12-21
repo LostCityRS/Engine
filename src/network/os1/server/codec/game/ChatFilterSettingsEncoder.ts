@@ -3,7 +3,7 @@ import type Packet from '#/io/Packet.ts';
 import MessageEncoder from '#/network/server/codec/MessageEncoder.ts';
 import type ChatSettings from '#/network/server/model/game/ChatSettings.ts';
 
-export default class ChatSettingsEncoder extends MessageEncoder {
+export default class ChatFilterSettingsEncoder extends MessageEncoder {
     opcode = 137;
     size = 2;
 

@@ -18,18 +18,18 @@ import PlayerInfo from '#/network/server/model/game/PlayerInfo.ts';
 import PlayerInfoEncoder from '#/network/os1/server/codec/game/PlayerInfoEncoder.ts';
 import IfOpenSub from '#/network/server/model/game/IfOpenSub.ts';
 import IfOpenSubEncoder from '#/network/os1/server/codec/game/IfOpenSubEncoder.ts';
-import RunEnergy from '#/network/server/model/game/RunEnergy.ts';
-import RunEnergyEncoder from '../codec/game/RunEnergyEncoder.ts';
+import UpdateRunEnergy from '#/network/server/model/game/UpdateRunEnergy.ts';
+import UpdateRunEnergyEncoder from '../codec/game/UpdateRunEnergyEncoder.ts';
 import ChatSettings from '#/network/server/model/game/ChatSettings.ts';
-import ChatSettingsEncoder from '../codec/game/ChatSettingsEncoder.ts';
-import RunWeight from '#/network/server/model/game/RunWeight.ts';
-import RunWeightEncoder from '../codec/game/RunWeightEncoder.ts';
-import UpdateSkill from '#/network/server/model/game/UpdateSkill.ts';
-import UpdateSkillEncoder from '../codec/game/UpdateSkillEncoder.ts';
+import ChatFilterSettings from '../codec/game/ChatFilterSettingsEncoder.ts';
+import UpdateRunWeight from '#/network/server/model/game/UpdateRunWeight.ts';
+import UpdateRunWeightEncoder from '../codec/game/UpdateRunWeightEncoder.ts';
 import PrivateChatFilter from '#/network/server/model/game/PrivateChatFilter.ts';
-import PrivateChatFilterEncoder from '../codec/game/PrivateChatFilterEncoder.ts';
-import PlaySound from '#/network/server/model/game/PlaySound.ts';
-import PlaySoundEncoder from '../codec/game/PlaySoundEncoder.ts';
+import PrivateChatFilterEncoder from '../codec/game/ChatFilterSettingsPrivateChatEncoder.ts';
+import SynthSound from '#/network/server/model/game/SynthSound.ts';
+import SynthSoundEncoder from '../codec/game/SynthSoundEncoder.ts';
+import UpdateStat from '#/network/server/model/game/UpdateStat.ts';
+import UpdateStatEncoder from '../codec/game/UpdateStatEncoder.ts';
 
 export default class GameServerRepository extends ServerRepository {
     constructor() {
@@ -44,11 +44,11 @@ export default class GameServerRepository extends ServerRepository {
         this.bind(RebuildNormal, new RebuildNormalEncoder());
         this.bind(PlayerInfo, new PlayerInfoEncoder());
         this.bind(IfOpenSub, new IfOpenSubEncoder());
-        this.bind(RunEnergy, new RunEnergyEncoder());
-        this.bind(ChatSettings, new ChatSettingsEncoder());
-        this.bind(RunWeight, new RunWeightEncoder());
-        this.bind(UpdateSkill, new UpdateSkillEncoder());
+        this.bind(UpdateRunEnergy, new UpdateRunEnergyEncoder());
+        this.bind(ChatSettings, new ChatFilterSettings());
+        this.bind(UpdateRunWeight, new UpdateRunWeightEncoder());
+        this.bind(UpdateStat, new UpdateStatEncoder());
         this.bind(PrivateChatFilter, new PrivateChatFilterEncoder());
-        this.bind(PlaySound, new PlaySoundEncoder());
+        this.bind(SynthSound, new SynthSoundEncoder());
     }
 }

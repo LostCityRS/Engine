@@ -6,18 +6,18 @@ import MessageDecoder from '#/network/client/codec/MessageDecoder.ts';
 import NoOp from '#/network/client/model/game/NoOp.ts';
 import Logout from '#/network/server/model/game/Logout.ts';
 
-export default class InterfaceClickDecoder extends MessageDecoder {
+export default class IfButtonDecoder extends MessageDecoder {
     opcode = 155;
     size = 4;
     limit = GameClientLimit.CLIENT;
 
     read(buf: Packet): ClientMessage {
-        const iface = buf.g4();
+        const com = buf.g4();
 
-        if (iface === 11927558)
+        if (com === 11927558)
             return new Logout()
 
-        console.log('iface click: ', iface)
+        console.log('if_button: ', com)
         return NoOp
     }
 }
