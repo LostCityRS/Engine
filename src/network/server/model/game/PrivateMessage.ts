@@ -6,10 +6,11 @@ export default class PrivateMessage extends GameServerMessage {
     priority = GameServerPriority.BUFFERED;
 
     constructor(
+        readonly senderName: string,
         readonly message: string,
-        readonly u1: number,
-        readonly u2: number,
-        readonly u3: number
+        readonly senderId: number, //verify
+        readonly messageId: number, //verify
+        readonly senderRights: number,
     ) {
         super();
     }

@@ -7,9 +7,9 @@ import ClientCheatHandler from '#/network/os1/client/handler/game/ClientCheatHan
 import MoveClickHandler from '#/network/os1/client/handler/game/MoveClickHandler.ts';
 import NoOpHandler from '#/network/os1/client/handler/game/NoOpHandler.ts';
 import ClanDecoder from '../../codec/game/ClanDecoder.ts';
-import LogoutDecoder from '../../codec/game/LogoutDecoder.ts';
+import IfButtonDecoder from '../../codec/game/IfButtonDecoder.ts';
 import ClanHandler from '../../handler/game/ClanHandler.ts';
-import LogoutHandler from '../../handler/game/LogoutHandler.ts';
+import IfButtonHandler from '../../handler/game/IfButtonHandler.ts';
 
 export default class GameClientRepository extends ClientRepository {
     constructor() {
@@ -28,7 +28,7 @@ export default class GameClientRepository extends ClientRepository {
         this.bind(new NoOpDecoder(197, 0), new NoOpHandler());
 
         this.bind(new ClientCheatDecoder(), new ClientCheatHandler())
-        this.bind(new LogoutDecoder(), new LogoutHandler())
+        this.bind(new IfButtonDecoder(), new IfButtonHandler())
         this.bind(new ClanDecoder(), new ClanHandler())
     }
 }

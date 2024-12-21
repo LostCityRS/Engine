@@ -18,6 +18,18 @@ import PlayerInfo from '#/network/server/model/game/PlayerInfo.ts';
 import PlayerInfoEncoder from '#/network/os1/server/codec/game/PlayerInfoEncoder.ts';
 import IfOpenSub from '#/network/server/model/game/IfOpenSub.ts';
 import IfOpenSubEncoder from '#/network/os1/server/codec/game/IfOpenSubEncoder.ts';
+import UpdateRunEnergy from '#/network/server/model/game/UpdateRunEnergy.ts';
+import UpdateRunEnergyEncoder from '../codec/game/UpdateRunEnergyEncoder.ts';
+import ChatFilterSettings from '#/network/server/model/game/ChatFilterSettings.ts';
+import ChatFilterSettingsEncoder from '../codec/game/ChatFilterSettingsEncoder.ts';
+import UpdateRunWeight from '#/network/server/model/game/UpdateRunWeight.ts';
+import UpdateRunWeightEncoder from '../codec/game/UpdateRunWeightEncoder.ts';
+import ChatFilterSettingsPrivateChat from '#/network/server/model/game/ChatFilterSettingsPrivateChat.ts';
+import ChatFilterSettingsPrivateChatEncoder from '../codec/game/ChatFilterSettingsPrivateChatEncoder.ts';
+import SynthSound from '#/network/server/model/game/SynthSound.ts';
+import SynthSoundEncoder from '../codec/game/SynthSoundEncoder.ts';
+import UpdateStat from '#/network/server/model/game/UpdateStat.ts';
+import UpdateStatEncoder from '../codec/game/UpdateStatEncoder.ts';
 
 export default class GameServerRepository extends ServerRepository {
     constructor() {
@@ -32,5 +44,11 @@ export default class GameServerRepository extends ServerRepository {
         this.bind(RebuildNormal, new RebuildNormalEncoder());
         this.bind(PlayerInfo, new PlayerInfoEncoder());
         this.bind(IfOpenSub, new IfOpenSubEncoder());
+        this.bind(UpdateRunEnergy, new UpdateRunEnergyEncoder());
+        this.bind(ChatFilterSettings, new ChatFilterSettingsEncoder());
+        this.bind(UpdateRunWeight, new UpdateRunWeightEncoder());
+        this.bind(UpdateStat, new UpdateStatEncoder());
+        this.bind(ChatFilterSettingsPrivateChat, new ChatFilterSettingsPrivateChatEncoder());
+        this.bind(SynthSound, new SynthSoundEncoder());
     }
 }
