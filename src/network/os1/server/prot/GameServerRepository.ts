@@ -20,12 +20,12 @@ import IfOpenSub from '#/network/server/model/game/IfOpenSub.ts';
 import IfOpenSubEncoder from '#/network/os1/server/codec/game/IfOpenSubEncoder.ts';
 import UpdateRunEnergy from '#/network/server/model/game/UpdateRunEnergy.ts';
 import UpdateRunEnergyEncoder from '../codec/game/UpdateRunEnergyEncoder.ts';
-import ChatSettings from '#/network/server/model/game/ChatSettings.ts';
-import ChatFilterSettings from '../codec/game/ChatFilterSettingsEncoder.ts';
+import ChatFilterSettings from '#/network/server/model/game/ChatFilterSettings.ts';
+import ChatFilterSettingsEncoder from '../codec/game/ChatFilterSettingsEncoder.ts';
 import UpdateRunWeight from '#/network/server/model/game/UpdateRunWeight.ts';
 import UpdateRunWeightEncoder from '../codec/game/UpdateRunWeightEncoder.ts';
-import PrivateChatFilter from '#/network/server/model/game/PrivateChatFilter.ts';
-import PrivateChatFilterEncoder from '../codec/game/ChatFilterSettingsPrivateChatEncoder.ts';
+import ChatFilterSettingsPrivateChat from '#/network/server/model/game/ChatFilterSettingsPrivateChat.ts';
+import ChatFilterSettingsPrivateChatEncoder from '../codec/game/ChatFilterSettingsPrivateChatEncoder.ts';
 import SynthSound from '#/network/server/model/game/SynthSound.ts';
 import SynthSoundEncoder from '../codec/game/SynthSoundEncoder.ts';
 import UpdateStat from '#/network/server/model/game/UpdateStat.ts';
@@ -45,10 +45,10 @@ export default class GameServerRepository extends ServerRepository {
         this.bind(PlayerInfo, new PlayerInfoEncoder());
         this.bind(IfOpenSub, new IfOpenSubEncoder());
         this.bind(UpdateRunEnergy, new UpdateRunEnergyEncoder());
-        this.bind(ChatSettings, new ChatFilterSettings());
+        this.bind(ChatFilterSettings, new ChatFilterSettingsEncoder());
         this.bind(UpdateRunWeight, new UpdateRunWeightEncoder());
         this.bind(UpdateStat, new UpdateStatEncoder());
-        this.bind(PrivateChatFilter, new PrivateChatFilterEncoder());
+        this.bind(ChatFilterSettingsPrivateChat, new ChatFilterSettingsPrivateChatEncoder());
         this.bind(SynthSound, new SynthSoundEncoder());
     }
 }

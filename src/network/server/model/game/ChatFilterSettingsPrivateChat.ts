@@ -2,7 +2,7 @@ import GameServerMessage from '#/network/server/GameServerMessage.ts';
 
 import GameServerPriority from '#/network/server/prot/game/GameServerPriority.ts';
 
-export default class PrivateChatFilter extends GameServerMessage {
+export default class ChatFilterSettingsPrivateChat extends GameServerMessage {
     priority = GameServerPriority.BUFFERED;
 
     // 0: On
