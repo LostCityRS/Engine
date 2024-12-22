@@ -4,7 +4,6 @@ import ClientMessage from '#/network/client/ClientMessage.ts';
 import GameClientLimit from '#/network/client/codec/game/GameClientLimit.ts';
 import MessageDecoder from '#/network/client/codec/MessageDecoder.ts';
 import NoOp from '#/network/client/model/game/NoOp.ts';
-import Logout from '#/network/server/model/game/Logout.ts';
 
 export default class ClanDecoder extends MessageDecoder {
     opcode = 185;
