@@ -5,7 +5,7 @@ import GameClientLimit from '#/network/client/codec/game/GameClientLimit.ts';
 import MessageDecoder from '#/network/client/codec/MessageDecoder.ts';
 import ObjExamine from "#/network/client/model/game/ObjExamine.js";
 
-export default class TileObjExamineDecoder extends MessageDecoder {
+export default class ObjExamineDecoder extends MessageDecoder {
     opcode = 49;
     size = 2;
     limit = GameClientLimit.CLIENT;
