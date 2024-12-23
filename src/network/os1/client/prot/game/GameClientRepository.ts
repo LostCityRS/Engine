@@ -26,6 +26,16 @@ import OpPlayer7Decoder from "#/network/os1/client/codec/game/OpPlayer7Decoder.j
 import OpPlayer7Handler from "#/network/os1/client/handler/game/OpPlayer7Handler.js";
 import OpPlayer8Decoder from "#/network/os1/client/codec/game/OpPlayer8Decoder.js";
 import OpPlayer8Handler from "#/network/os1/client/handler/game/OpPlayer8Handler.js";
+import OpNpc1Decoder from "#/network/os1/client/codec/game/OpNpc1Decoder.js";
+import OpNpc1Handler from "#/network/os1/client/handler/game/OpNpc1Handler.js";
+import OpNpc2Decoder from "#/network/os1/client/codec/game/OpNpc2Decoder.js";
+import OpNpc2Handler from "#/network/os1/client/handler/game/OpNpc2Handler.js";
+import OpNpc3Decoder from "#/network/os1/client/codec/game/OpNpc3Decoder.js";
+import OpNpc3Handler from "#/network/os1/client/handler/game/OpNpc3Handler.js";
+import OpNpc4Decoder from "#/network/os1/client/codec/game/OpNpc4Decoder.js";
+import OpNpc4Handler from "#/network/os1/client/handler/game/OpNpc4Handler.js";
+import OpNpc5Decoder from "#/network/os1/client/codec/game/OpNpc5Decoder.js";
+import OpNpc5Handler from "#/network/os1/client/handler/game/OpNpc5Handler.js";
 
 export default class GameClientRepository extends ClientRepository {
     constructor() {
@@ -54,5 +64,10 @@ export default class GameClientRepository extends ClientRepository {
         this.bind(new OpPlayer6Decoder(), new OpPlayer6Handler())
         this.bind(new OpPlayer7Decoder(), new OpPlayer7Handler())
         this.bind(new OpPlayer8Decoder(), new OpPlayer8Handler())
+        this.bind(new OpNpc1Decoder(), new OpNpc1Handler())
+        this.bind(new OpNpc2Decoder(), new OpNpc2Handler())
+        this.bind(new OpNpc3Decoder(), new OpNpc3Handler())
+        this.bind(new OpNpc4Decoder(), new OpNpc4Handler())
+        this.bind(new OpNpc5Decoder(), new OpNpc5Handler())
     }
 }
