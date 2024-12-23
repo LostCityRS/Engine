@@ -56,6 +56,12 @@ import OpObj4Decoder from "#/network/os1/client/codec/game/OpObj4Decoder.js";
 import OpObj4Handler from "#/network/os1/client/handler/game/OpObj4Handler.js";
 import OpObj5Decoder from "#/network/os1/client/codec/game/OpObj5Decoder.js";
 import OpObj5Handler from "#/network/os1/client/handler/game/OpObj5Handler.js";
+import LocExamineDecoder from "#/network/os1/client/codec/game/LocExamineDecoder.js";
+import LocExamineHandler from "#/network/os1/client/handler/game/LocExamineHandler.js";
+import NpcExamineDecoder from "#/network/os1/client/codec/game/NpcExamineDecoder.js";
+import NpcExamineHandler from "#/network/os1/client/handler/game/NpcExamineHandler.js";
+import TileObjExamineDecoder from "#/network/os1/client/codec/game/ObjExamineDecoder.js";
+import ObjExamineHandler from "#/network/os1/client/handler/game/ObjExamineHandler.js";
 
 export default class GameClientRepository extends ClientRepository {
     constructor() {
@@ -99,5 +105,8 @@ export default class GameClientRepository extends ClientRepository {
         this.bind(new OpObj3Decoder(), new OpObj3Handler())
         this.bind(new OpObj4Decoder(), new OpObj4Handler())
         this.bind(new OpObj5Decoder(), new OpObj5Handler())
+        this.bind(new LocExamineDecoder(), new LocExamineHandler())
+        this.bind(new NpcExamineDecoder(), new NpcExamineHandler())
+        this.bind(new TileObjExamineDecoder(), new ObjExamineHandler())
     }
 }

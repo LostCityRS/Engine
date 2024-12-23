@@ -1,7 +1,5 @@
 import type NetworkPlayer from '#/engine/NetworkPlayer.ts';
 import MessageHandler from '#/network/client/handler/MessageHandler.ts';
-import NoOp from '#/network/client/model/game/NoOp.ts';
-import GameServerMessage from '#/network/server/GameServerMessage.ts';
 import type IfButton from "#/network/client/model/game/IfButton.js";
 import Logout from "#/network/server/model/game/Logout.js";
 
@@ -11,6 +9,7 @@ export default class IfButtonHandler extends MessageHandler {
             player.write(new Logout())
             return true;
         }
+
         console.log('if_button: ', message.com)
         return true;
     }

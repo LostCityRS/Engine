@@ -341,12 +341,12 @@ export default class Packet {
     
     g2_alt1(): number {
         this.pos += 2;
-        return ((this.#view.getUint8(this.pos - 2))) + ((this.#view.getUint8(this.pos - 1) << 8) & 0xFF);
+        return ((this.#view.getUint8(this.pos - 2))) + ((this.#view.getUint8(this.pos - 1) << 8 & 0xFF));
     }
 
     g2_alt2(): number {
         this.pos += 2;
-        return ((this.#view.getUint8(this.pos - 1)) - 128) + ((this.#view.getUint8(this.pos - 2) << 8) & 0xFF);
+        return ((this.#view.getUint8(this.pos - 2) << 8) + (this.#view.getUint8(this.pos - 1) - 128 & 0xFF));
     }
 
     g2_alt3(): number {
