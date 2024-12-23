@@ -46,6 +46,16 @@ import OpLoc4Decoder from "#/network/os1/client/codec/game/OpLoc4Decoder.js";
 import OpLoc4Handler from "#/network/os1/client/handler/game/OpLoc4Handler.js";
 import OpLoc5Decoder from "#/network/os1/client/codec/game/OpLoc5Decoder.js";
 import OpLoc5Handler from "#/network/os1/client/handler/game/OpLoc5Handler.js";
+import OpObj1Decoder from "#/network/os1/client/codec/game/OpObj1Decoder.js";
+import OpObj1Handler from "#/network/os1/client/handler/game/OpObj1Handler.js";
+import OpObj2Decoder from "#/network/os1/client/codec/game/OpObj2Decoder.js";
+import OpObj2Handler from "#/network/os1/client/handler/game/OpObj2Handler.js";
+import OpObj3Decoder from "#/network/os1/client/codec/game/OpObj3Decoder.js";
+import OpObj3Handler from "#/network/os1/client/handler/game/OpObj3Handler.js";
+import OpObj4Decoder from "#/network/os1/client/codec/game/OpObj4Decoder.js";
+import OpObj4Handler from "#/network/os1/client/handler/game/OpObj4Handler.js";
+import OpObj5Decoder from "#/network/os1/client/codec/game/OpObj5Decoder.js";
+import OpObj5Handler from "#/network/os1/client/handler/game/OpObj5Handler.js";
 
 export default class GameClientRepository extends ClientRepository {
     constructor() {
@@ -84,5 +94,10 @@ export default class GameClientRepository extends ClientRepository {
         this.bind(new OpLoc3Decoder(), new OpLoc3Handler())
         this.bind(new OpLoc4Decoder(), new OpLoc4Handler())
         this.bind(new OpLoc5Decoder(), new OpLoc5Handler())
+        this.bind(new OpObj1Decoder(), new OpObj1Handler())
+        this.bind(new OpObj2Decoder(), new OpObj2Handler())
+        this.bind(new OpObj3Decoder(), new OpObj3Handler())
+        this.bind(new OpObj4Decoder(), new OpObj4Handler())
+        this.bind(new OpObj5Decoder(), new OpObj5Handler())
     }
 }

@@ -372,6 +372,21 @@ export default class Packet {
         return this.#view.getInt32(this.pos - 4);
     }
 
+    g4_alt1(): number {
+        this.pos += 4;
+        return ((this.#view.getUint8(this.pos - 4))) | ((this.#view.getUint8(this.pos - 3) << 8)) | ((this.#view.getUint8(this.pos - 2) << 16)) | ((this.#view.getUint8(this.pos - 1) << 24));
+    }
+
+    g4_alt2(): number {
+        this.pos += 4;
+        return ((this.#view.getUint8(this.pos - 4) << 8)) | ((this.#view.getUint8(this.pos - 3))) | ((this.#view.getUint8(this.pos - 2) << 24)) | ((this.#view.getUint8(this.pos - 1) << 16));
+    }
+
+    g4_alt3(): number {
+        this.pos += 4;
+        return ((this.#view.getUint8(this.pos - 4) << 16)) | ((this.#view.getUint8(this.pos - 3) << 24)) | ((this.#view.getUint8(this.pos - 2))) | ((this.#view.getUint8(this.pos - 1) << 8));
+    }
+
     g8(): bigint {
         this.pos += 8;
         return this.#view.getBigInt64(this.pos - 8);
