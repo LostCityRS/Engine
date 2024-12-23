@@ -339,6 +339,18 @@ export default class Packet {
         return this.#view.getUint16(this.pos - 2);
     }
 
+    //Verify
+    g2_alt1(): number {
+        this.pos += 2;
+        return ((this.#view.getUint8(this.pos - 2) << 8)) | ((this.#view.getUint8(this.pos - 1)));
+    }
+
+    //Verify
+    g2_alt2(): number {
+        this.pos += 2;
+        return ((this.#view.getUint8(this.pos - 1)) - 128) | ((this.#view.getUint8(this.pos - 2) << 8) & 0xFF);
+    }
+
     g2_alt3(): number {
         this.pos += 2;
         return ((this.#view.getUint8(this.pos - 1)) << 8) + ((this.#view.getUint8(this.pos - 2) - 128) & 0xFF);
