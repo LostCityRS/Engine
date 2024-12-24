@@ -119,7 +119,7 @@ class World {
             player.write(new IfOpenSub((548 << 16) | 109, 182, 0)); // toplevel:stone10 -> logout
             player.write(new IfOpenSub((548 << 16) | 110, 261, 0)); // toplevel:stone11 -> options
             player.write(new IfOpenSub((548 << 16) | 111, 464, 0)); // toplevel:stone12 -> emotes
-            // player.write(new IfOpenSub((548 << 16) | 112, 0, 0)); // toplevel:stone13 -> todo
+            player.write(new IfOpenSub((548 << 16) | 112, 239, 0)); // toplevel:stone13 -> music
         }
     }
 }
