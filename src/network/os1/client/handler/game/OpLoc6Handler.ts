@@ -1,10 +1,10 @@
 import type NetworkPlayer from '#/engine/NetworkPlayer.ts';
 import MessageHandler from '#/network/client/handler/MessageHandler.ts';
 import MessageGame from "#/network/server/model/game/MessageGame.js";
-import type LocExamine from "#/network/client/model/game/LocExamine.js";
+import type OpLoc6 from "#/network/client/model/game/OpLoc6.js";
 
-export default class LocExamineHandler extends MessageHandler {
-    handle(message: LocExamine, player: NetworkPlayer): boolean {
+export default class OpLoc6Handler extends MessageHandler {
+    handle(message: OpLoc6, player: NetworkPlayer): boolean {
 
         //todo: remove easter egg
         if (message.id === 1530) {

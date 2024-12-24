@@ -1,6 +1,6 @@
 import ClientMessage from '#/network/client/ClientMessage.ts';
 
-export default class LocExamine extends ClientMessage {
+export default class OpLoc6 extends ClientMessage {
     id: number;
 
     constructor(id: number) {

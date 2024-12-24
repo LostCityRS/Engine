@@ -1,6 +1,6 @@
 import ClientMessage from '#/network/client/ClientMessage.ts';
 
-export default class NpcExamine extends ClientMessage {
+export default class OpNpc6 extends ClientMessage {
     idx: number;
 
     constructor(idx: number) {

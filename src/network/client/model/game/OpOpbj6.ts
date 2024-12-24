@@ -1,6 +1,6 @@
 import ClientMessage from '#/network/client/ClientMessage.ts';
 
-export default class ObjExamine extends ClientMessage {
+export default class OpOpbj6 extends ClientMessage {
     id: number;
 
     constructor(id: number) {
