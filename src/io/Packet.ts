@@ -338,6 +338,16 @@ export default class Packet {
         this.pos += 2;
         return this.#view.getUint16(this.pos - 2);
     }
+    
+    g2_alt1(): number {
+        this.pos += 2;
+        return ((this.#view.getUint8(this.pos - 2))) + ((this.#view.getUint8(this.pos - 1) << 8 & 0xFF));
+    }
+
+    g2_alt2(): number {
+        this.pos += 2;
+        return ((this.#view.getUint8(this.pos - 2) << 8) + (this.#view.getUint8(this.pos - 1) - 128 & 0xFF));
+    }
 
     g2_alt3(): number {
         this.pos += 2;
@@ -358,6 +368,21 @@ export default class Packet {
     g4(): number {
         this.pos += 4;
         return this.#view.getInt32(this.pos - 4);
+    }
+
+    g4_alt1(): number {
+        this.pos += 4;
+        return ((this.#view.getUint8(this.pos - 4))) + ((this.#view.getUint8(this.pos - 3) << 8)) + ((this.#view.getUint8(this.pos - 2) << 16)) + ((this.#view.getUint8(this.pos - 1) << 24));
+    }
+
+    g4_alt2(): number {
+        this.pos += 4;
+        return ((this.#view.getUint8(this.pos - 4) << 8)) + ((this.#view.getUint8(this.pos - 3))) + ((this.#view.getUint8(this.pos - 2) << 24)) + ((this.#view.getUint8(this.pos - 1) << 16));
+    }
+
+    g4_alt3(): number {
+        this.pos += 4;
+        return ((this.#view.getUint8(this.pos - 4) << 16)) + ((this.#view.getUint8(this.pos - 3) << 24)) + ((this.#view.getUint8(this.pos - 2))) + ((this.#view.getUint8(this.pos - 1) << 8));
     }
 
     g8(): bigint {

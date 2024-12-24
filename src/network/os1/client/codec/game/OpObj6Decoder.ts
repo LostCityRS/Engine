@@ -3,15 +3,15 @@ import type Packet from '#/io/Packet.ts';
 import type ClientMessage from '#/network/client/ClientMessage.ts';
 import GameClientLimit from '#/network/client/codec/game/GameClientLimit.ts';
 import MessageDecoder from '#/network/client/codec/MessageDecoder.ts';
-import IfButton from "#/network/client/model/game/IfButton.js";
+import OpOpbj6 from "#/network/client/model/game/OpOpbj6.js";
 
-export default class IfButtonDecoder extends MessageDecoder {
-    opcode = 155;
-    size = 4;
+export default class OpObj6Decoder extends MessageDecoder {
+    opcode = 49;
+    size = 2;
     limit = GameClientLimit.CLIENT;
 
     read(buf: Packet): ClientMessage {
-        const com = buf.g4();
-        return new IfButton(com)
+        const idx = buf.g2_alt1();
+        return new OpOpbj6(idx);
     }
 }
