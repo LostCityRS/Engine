@@ -8,7 +8,7 @@ export default class LocExamineHandler extends MessageHandler {
 
         //todo: remove easter egg
         if (message.id === 1530) {
-            player.write(new MessageGame('Who\'s there?'));
+            player.write(new MessageGame("Who's there?"));
             return true;
         }
 

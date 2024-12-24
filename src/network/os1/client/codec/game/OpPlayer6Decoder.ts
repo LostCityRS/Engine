@@ -3,7 +3,7 @@ import type Packet from '#/io/Packet.ts';
 import type ClientMessage from '#/network/client/ClientMessage.ts';
 import GameClientLimit from '#/network/client/codec/game/GameClientLimit.ts';
 import MessageDecoder from '#/network/client/codec/MessageDecoder.ts';
-import OpPlayer6 from "#/network/client/model/game/OpPlayer6.js";
+import OpPlayer from "#/network/client/model/game/OpPlayer.js";
 
 export default class OpPlayer6Decoder extends MessageDecoder {
     opcode = 111;
@@ -12,6 +12,6 @@ export default class OpPlayer6Decoder extends MessageDecoder {
 
     read(buf: Packet): ClientMessage {
         const playerId = buf.g2_alt3();
-        return new OpPlayer6(playerId);
+        return new OpPlayer(6, playerId);
     }
 }

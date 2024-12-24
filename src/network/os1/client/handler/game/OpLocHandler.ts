@@ -1,13 +1,13 @@
 import type NetworkPlayer from '#/engine/NetworkPlayer.ts';
 import MessageHandler from '#/network/client/handler/MessageHandler.ts';
-import type OpLoc1 from "#/network/client/model/game/OpLoc1.js";
+import type OpLoc from "#/network/client/model/game/OpLoc.js";
 import MessageGame from "#/network/server/model/game/MessageGame.js";
 
-export default class OpLoc1Handler extends MessageHandler {
-    handle(message: OpLoc1, player: NetworkPlayer): boolean {
+export default class OpLocHandler extends MessageHandler {
+    handle(message: OpLoc, player: NetworkPlayer): boolean {
 
         //todo: remove easter egg
-        if (message.locId === 1530) {
+        if (message.op === 1 && message.locId === 1530) {
             player.write(new MessageGame('Knock Knock...'))
             return true;
         }
